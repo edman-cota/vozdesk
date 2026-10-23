@@ -32,9 +32,11 @@ app.add_middleware(
 )
 
 # Monta el servidor MCP en /mcp (acceso vía SSE en /mcp/sse para Custumu y clientes remotos)
+from mcp.server.transport_security import TransportSecuritySettings
 from app.mcp.server import mcp as mcp_server
 
-app.mount("/mcp", mcp_server.sse_app())
+_mcp_security = TransportSecuritySettings(enable_dns_rebinding_protection=False)
+app.mount("/mcp", mcp_server.sse_app(message_path="/mcp/messages/", transport_security=_mcp_security))
 
 
 # ---------------------------------------------------------------------------
