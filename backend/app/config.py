@@ -12,8 +12,8 @@ class Settings(BaseSettings):
 
     jwt_audience: str = "authenticated"
     cors_origins: str = "http://localhost:5174,http://127.0.0.1:5174"
-    # Soporta cualquier subdominio de Cloudflare Pages (*.pages.dev) además de los orígenes explícitos
-    cors_origin_regex: str | None = r"^https://.*\.pages\.dev$"
+    # Soporta subdominios de Cloudflare (*.workers.dev y *.pages.dev)
+    cors_origin_regex: str | None = r"^https://.*(\.pages\.dev|\.workers\.dev)$"
     host: str = "0.0.0.0"
     port: int = 8001  # En local 8001; en Render se inyecta PORT automáticamente
 
