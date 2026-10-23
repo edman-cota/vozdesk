@@ -31,6 +31,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Monta el servidor MCP en /mcp (acceso vía SSE en /mcp/sse para Custumu y clientes remotos)
+from app.mcp.server import mcp as mcp_server
+
+app.mount("/mcp", mcp_server.sse_app())
+
 
 # ---------------------------------------------------------------------------
 # Modelos

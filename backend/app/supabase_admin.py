@@ -47,6 +47,20 @@ class SupabaseAdmin:
         )
         return data[0]
 
+    async def update(
+        self, table: str, params: dict[str, str], row: dict[str, Any], select: str = "*"
+    ) -> list[dict[str, Any]]:
+        return await self._request(
+            "PATCH",
+            table,
+            params={**params, "select": select},
+            json=row,
+            headers={"Prefer": "return=representation"},
+        )
+
+    async def delete(self, table: str, params: dict[str, str]) -> Any:
+        return await self._request("DELETE", table, params=params)
+
 
 _admin: SupabaseAdmin | None = None
 
