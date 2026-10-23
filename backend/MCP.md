@@ -57,11 +57,11 @@ Puedes conectar el servidor localmente a través de **Stdio** para usarlo en Cla
 
 ## 🌐 2. Conexión Remota / HTTP (Para Custumu o Agentes en la Nube)
 
-El servidor FastAPI monta automáticamente el protocolo MCP vía **Server-Sent Events (SSE)** en:
+El servidor FastAPI monta el protocolo MCP estándar (compatible con clientes como Custumu, Cal.com, etc.) directamente en:
 
 * **En local:**
-  👉 `http://localhost:8001/mcp/sse`
+  👉 `http://localhost:8001/mcp`
 * **En producción (Render):**
-  👉 `https://vozdesk-api.onrender.com/mcp/sse`
+  👉 `https://vozdesk-api.onrender.com/mcp`
 
-Cualquier cliente o agente MCP (como **Custumu-API**) puede suscribirse a ese endpoint HTTP para ejecutar herramientas de forma remota sin necesidad de acceder a la consola local.
+Cualquier cliente o agente MCP (como **Custumu-API**) puede conectarse directamente a esa URL estándar para ejecutar herramientas de forma remota.
