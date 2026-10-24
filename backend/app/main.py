@@ -36,9 +36,23 @@ from mcp.server.transport_security import TransportSecuritySettings
 from app.mcp.server import mcp as mcp_server
 
 _mcp_security = TransportSecuritySettings(enable_dns_rebinding_protection=False)
-# SSE montado en la raíz de /mcp (sse_path='' o '/') y mensajes en /mcp/messages
 _sse_app = mcp_server.sse_app(sse_path="/", message_path="/mcp/messages/", transport_security=_mcp_security)
+
 app.mount("/mcp", _sse_app)
+
+
+@app.get("/mcp/tools", tags=["MCP"])
+async def get_mcp_tools():
+    """Retorna la lista de todas las herramientas (tools) expuestas por el servidor MCP en formato JSON estándar."""
+    tools_list = await mcp_server.list_tools()
+    return [
+        {
+            "name": t.name,
+            "description": t.description,
+            "inputSchema": t.inputSchema if hasattr(t, "inputSchema") else getattr(t, "parameters", {}),
+        }
+        for t in tools_list
+    ]
 
 
 # ---------------------------------------------------------------------------
