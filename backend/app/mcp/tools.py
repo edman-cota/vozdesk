@@ -36,14 +36,25 @@ async def list_teams(workspace_id: str | None = None) -> list[dict[str, Any]]:
 
 
 async def get_team_by_key(team_key: str) -> dict[str, Any]:
-    """Busca un equipo por su clave única (ej: 'WUD')."""
+    """Busca un equipo por su clave única (ej: 'WUD') o por su nombre."""
     admin = get_admin()
+    clean_key = team_key.strip().upper()
     teams = await admin.select(
         "teams",
-        {"select": "id, workspace_id, name, key, issue_counter", "key": f"eq.{team_key.upper().strip()}"},
+        {"select": "id, workspace_id, name, key, issue_counter", "key": f"eq.{clean_key}"},
     )
     if not teams:
-        raise ValueError(f"Equipo con key '{team_key}' no encontrado.")
+        # Si no se encontró por clave exacta, buscar por nombre del equipo
+        teams = await admin.select(
+            "teams",
+            {"select": "id, workspace_id, name, key, issue_counter", "name": f"ilike.{team_key.strip()}"},
+        )
+    if not teams:
+        all_teams = await admin.select("teams", {"select": "key, name", "limit": "10"})
+        available = ", ".join([f"'{t['key']}' ({t['name']})" for t in all_teams]) if all_teams else "ninguno"
+        raise ValueError(
+            f"Equipo '{team_key}' no encontrado. Equipos disponibles: {available}."
+        )
     return teams[0]
 
 
@@ -126,12 +137,58 @@ async def get_issue(identifier: str) -> dict[str, Any]:
     }
 
 
+def normalize_priority(priority: Any) -> int:
+    """Normaliza la prioridad a un entero entre 0 y 4."""
+    if isinstance(priority, int) and 0 <= priority <= 4:
+        return priority
+    if isinstance(priority, str):
+        val = priority.strip().lower()
+        mapping = {
+            "0": 0, "none": 0, "ninguna": 0, "sin prioridad": 0,
+            "1": 1, "urgent": 1, "urgente": 1,
+            "2": 2, "high": 2, "alta": 2,
+            "3": 3, "medium": 3, "media": 3,
+            "4": 4, "low": 4, "baja": 4,
+        }
+        if val in mapping:
+            return mapping[val]
+        try:
+            p = int(val)
+            if 0 <= p <= 4:
+                return p
+        except ValueError:
+            pass
+    return 0
+
+
+def normalize_status(status: str) -> str:
+    """Normaliza el estado para respetar las restricciones de la base de datos."""
+    val = status.lower().strip()
+    status_map = {
+        "open": "todo",
+        "to_do": "todo",
+        "to do": "todo",
+        "in-progress": "in_progress",
+        "in progress": "in_progress",
+        "closed": "done",
+    }
+    val = status_map.get(val, val)
+    valid_statuses = {"backlog", "todo", "in_progress", "in_review", "done", "canceled"}
+    return val if val in valid_statuses else "backlog"
+
+
+def normalize_source(source: str) -> str:
+    """Asegura que el origen sea estrictamente 'manual' o 'voice'."""
+    val = source.lower().strip()
+    return val if val in ("manual", "voice") else "voice"
+
+
 async def create_issue(
     team_key: str,
     title: str,
     description: str | None = None,
     status: str = "backlog",
-    priority: int = 0,
+    priority: int | str = 0,
     due_date: str | None = None,
     source: str = "voice",
 ) -> dict[str, Any]:
@@ -140,11 +197,12 @@ async def create_issue(
     admin = get_admin()
 
     row: dict[str, Any] = {
+        "workspace_id": team["workspace_id"],
         "team_id": team["id"],
         "title": title.strip(),
-        "status": status.lower().strip(),
-        "priority": int(priority),
-        "source": source,
+        "status": normalize_status(status),
+        "priority": normalize_priority(priority),
+        "source": normalize_source(source),
     }
     if description:
         row["description"] = description.strip()
@@ -184,13 +242,9 @@ async def update_issue(
     if description is not None:
         updates["description"] = description.strip()
     if status is not None:
-        valid_statuses = {"backlog", "todo", "in_progress", "in_review", "done", "canceled"}
-        val = status.lower().strip()
-        if val not in valid_statuses:
-            raise ValueError(f"Estado '{status}' inválido. Opciones: {sorted(valid_statuses)}")
-        updates["status"] = val
+        updates["status"] = normalize_status(status)
     if priority is not None:
-        updates["priority"] = int(priority)
+        updates["priority"] = normalize_priority(priority)
     if due_date is not None:
         updates["due_date"] = due_date.strip() if due_date else None
 

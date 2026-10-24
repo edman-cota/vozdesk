@@ -87,18 +87,25 @@ async def handle_mcp_jsonrpc(request: dict[str, Any]):
         try:
             result = await mcp_server.call_tool(tool_name, arguments)
             # Normalizar respuesta según especificación MCP
+            is_error = False
+            raw_content = result
+            if hasattr(result, "content"):
+                raw_content = result.content
+                is_error = bool(getattr(result, "isError", False))
+
             content = []
-            if isinstance(result, list):
-                for item in result:
+            if isinstance(raw_content, list):
+                for item in raw_content:
                     content.append({"type": "text", "text": str(getattr(item, "text", item))})
             else:
-                content.append({"type": "text", "text": str(result)})
+                content.append({"type": "text", "text": str(raw_content)})
+
             return {
                 "jsonrpc": "2.0",
                 "id": req_id,
                 "result": {
                     "content": content,
-                    "isError": False,
+                    "isError": is_error,
                 },
             }
         except Exception as exc:
@@ -106,7 +113,7 @@ async def handle_mcp_jsonrpc(request: dict[str, Any]):
                 "jsonrpc": "2.0",
                 "id": req_id,
                 "result": {
-                    "content": [{"type": "text", "text": f"Error ejecutando herramienta: {exc}"}],
+                    "content": [{"type": "text", "text": f"Error ejecutando herramienta {tool_name}: {exc}"}],
                     "isError": True,
                 },
             }

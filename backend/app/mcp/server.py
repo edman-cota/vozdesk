@@ -55,13 +55,13 @@ async def create_issue(
     title: str,
     description: str | None = None,
     status: str = "backlog",
-    priority: int = 0,
+    priority: int | str = 0,
     due_date: str | None = None,
     source: str = "voice",
 ) -> dict[str, Any]:
     """Crea una nueva tarea o issue en el equipo indicado.
 
-    - team_key: Clave del equipo (ej: 'WUD').
+    - team_key: Clave del equipo (ej: 'WUD') o su nombre.
     - title: Título del issue.
     - description: Descripción detallada o contexto.
     - status: 'backlog', 'todo', 'in_progress', 'in_review', 'done', 'canceled'.
@@ -86,7 +86,7 @@ async def update_issue(
     title: str | None = None,
     description: str | None = None,
     status: str | None = None,
-    priority: int | None = None,
+    priority: int | str | None = None,
     due_date: str | None = None,
 ) -> dict[str, Any]:
     """Actualiza uno o varios campos de un issue existente (ej: identifier='WUD-5')."""
