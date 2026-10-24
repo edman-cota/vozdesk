@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from datetime import date
-from typing import Literal
+from typing import Any, Literal
 
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -31,19 +31,122 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Monta el servidor MCP en el estándar /mcp
-from mcp.server.transport_security import TransportSecuritySettings
+# Servidor MCP estándar sobre HTTP (JSON-RPC 2.0)
 from app.mcp.server import mcp as mcp_server
 
-_mcp_security = TransportSecuritySettings(enable_dns_rebinding_protection=False)
-_sse_app = mcp_server.sse_app(sse_path="/", message_path="/mcp/messages/", transport_security=_mcp_security)
 
-app.mount("/mcp", _sse_app)
+@app.post("/mcp", tags=["MCP"])
+async def handle_mcp_jsonrpc(request: dict[str, Any]):
+    """Endpoint MCP estándar JSON-RPC 2.0 (compatible con Custumu, Cal.com y agentes web)."""
+    method = request.get("method")
+    req_id = request.get("id")
+    params = request.get("params", {})
+
+    if method == "initialize":
+        return {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "result": {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {
+                    "tools": {"listChanged": False},
+                    "resources": {},
+                    "prompts": {},
+                },
+                "serverInfo": {
+                    "name": "VozDesk",
+                    "version": "1.0.0",
+                },
+            },
+        }
+
+    if method == "notifications/initialized":
+        return {"jsonrpc": "2.0"}
+
+    if method in ("tools/list", "tools/list_tools"):
+        tools_list = await mcp_server.list_tools()
+        tools_data = []
+        for t in tools_list:
+            schema = t.inputSchema if hasattr(t, "inputSchema") else getattr(t, "parameters", {})
+            tools_data.append({
+                "name": t.name,
+                "description": t.description or "",
+                "inputSchema": schema,
+            })
+        return {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "result": {
+                "tools": tools_data
+            },
+        }
+
+    if method == "tools/call":
+        tool_name = params.get("name")
+        arguments = params.get("arguments", {})
+        try:
+            result = await mcp_server.call_tool(tool_name, arguments)
+            # Normalizar respuesta según especificación MCP
+            content = []
+            if isinstance(result, list):
+                for item in result:
+                    content.append({"type": "text", "text": str(getattr(item, "text", item))})
+            else:
+                content.append({"type": "text", "text": str(result)})
+            return {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {
+                    "content": content,
+                    "isError": False,
+                },
+            }
+        except Exception as exc:
+            return {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {
+                    "content": [{"type": "text", "text": f"Error ejecutando herramienta: {exc}"}],
+                    "isError": True,
+                },
+            }
+
+    if method == "ping":
+        return {"jsonrpc": "2.0", "id": req_id, "result": {}}
+
+    # Método no soportado
+    return {
+        "jsonrpc": "2.0",
+        "id": req_id,
+        "error": {
+            "code": -32601,
+            "message": f"Method not found: {method}",
+        },
+    }
+
+
+@app.get("/mcp", tags=["MCP"])
+async def get_mcp_info():
+    """Retorna información del servidor MCP y sus herramientas disponibles."""
+    tools_list = await mcp_server.list_tools()
+    return {
+        "status": "ready",
+        "protocol": "mcp-jsonrpc-2.0",
+        "tools_count": len(tools_list),
+        "tools": [
+            {
+                "name": t.name,
+                "description": t.description,
+                "inputSchema": t.inputSchema if hasattr(t, "inputSchema") else getattr(t, "parameters", {}),
+            }
+            for t in tools_list
+        ],
+    }
 
 
 @app.get("/mcp/tools", tags=["MCP"])
 async def get_mcp_tools():
-    """Retorna la lista de todas las herramientas (tools) expuestas por el servidor MCP en formato JSON estándar."""
+    """Retorna la lista de herramientas directamente para clientes que consultan /tools."""
     tools_list = await mcp_server.list_tools()
     return [
         {

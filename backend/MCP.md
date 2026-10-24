@@ -57,11 +57,19 @@ Puedes conectar el servidor localmente a través de **Stdio** para usarlo en Cla
 
 ## 🌐 2. Conexión Remota / HTTP (Para Custumu o Agentes en la Nube)
 
-El servidor FastAPI monta el protocolo MCP estándar (compatible con clientes como Custumu, Cal.com, etc.) directamente en:
+El servidor monta el protocolo MCP estándar mediante **HTTP Stateless / Streamable HTTP (JSON-RPC 2.0)**, idéntico a servidores como Cal.com y Wudlet:
 
 * **En local:**
   👉 `http://localhost:8001/mcp`
 * **En producción (Render):**
   👉 `https://vozdesk-api.onrender.com/mcp`
 
-Cualquier cliente o agente MCP (como **Custumu-API**) puede conectarse directamente a esa URL estándar para ejecutar herramientas de forma remota.
+### Métodos JSON-RPC 2.0 Soportados en `POST /mcp`:
+1. **`initialize`**: Retorna capacidades del servidor (`tools`, `resources`, `prompts`) y versión del protocolo.
+2. **`tools/list`**: Devuelve todas las herramientas, sus esquemas (`inputSchema`) y descripciones para que el cliente (Custumu) las muestre y permita activarlas/desactivarlas.
+3. **`tools/call`**: Ejecuta la herramienta solicitada con sus argumentos y retorna el resultado.
+4. **`ping`** y **`notifications/initialized`**: Heartbeat y confirmación de inicio de sesión.
+
+### Endpoints de Inspección Directa (GET):
+* `GET /mcp`: Retorna estado del servidor y resumen de herramientas.
+* `GET /mcp/tools`: Retorna directamente el listado de herramientas en formato JSON.
