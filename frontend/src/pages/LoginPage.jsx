@@ -51,21 +51,21 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative grid min-h-full place-items-center overflow-hidden px-4">
+    <div className="relative grid min-h-full place-items-center overflow-y-auto px-4 py-8">
       {/* Glow de fondo */}
       <div className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-gradient-to-br from-fuchsia-600/25 via-violet-600/20 to-indigo-600/10 blur-3xl" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.05)_1px,transparent_0)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
 
-      <main className="relative w-full max-w-[380px] animate-fade-in">
-        <div className="mb-8 flex flex-col items-center text-center">
-          <VozDeskLogo className="mb-5 size-11 drop-shadow-[0_8px_24px_rgba(168,85,247,0.45)]" />
-          <h1 className="text-xl font-semibold tracking-tight">
+      <main className="relative w-full max-w-[380px] animate-fade-in my-auto">
+        <div className="mb-6 sm:mb-8 flex flex-col items-center text-center">
+          <VozDeskLogo className="mb-4 sm:mb-5 size-10 sm:size-11 drop-shadow-[0_8px_24px_rgba(168,85,247,0.45)]" />
+          <h1 className="text-lg sm:text-xl font-semibold tracking-tight">
             {mode === 'signin' ? 'Inicia sesión en VozDesk' : 'Crea tu cuenta de VozDesk'}
           </h1>
-          <p className="mt-1.5 text-[13px] text-muted-foreground">Gestiona tus tareas hablando.</p>
+          <p className="mt-1 text-xs sm:text-[13px] text-muted-foreground">Gestiona tus tareas hablando.</p>
         </div>
 
-        <div className="rounded-2xl border border-subtle bg-card/70 p-6 shadow-2xl shadow-black/50 backdrop-blur-xl">
+        <div className="rounded-2xl border border-subtle bg-card/70 p-5 sm:p-6 shadow-2xl shadow-black/50 backdrop-blur-xl">
           <Button id="google-login" type="button" variant="outline" onClick={handleGoogle} className="h-10 w-full gap-2 border-subtle bg-white/[0.03] hover:bg-white/[0.07]">
             <GoogleIcon /> Continuar con Google
           </Button>

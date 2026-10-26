@@ -13,11 +13,12 @@ function initials(name = '') {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase() || 'VD'
 }
 
-function NavItem({ to, icon: Icon, children, indent = false, end = false }) {
+function NavItem({ to, icon: Icon, children, indent = false, end = false, onClick }) {
   return (
     <NavLink
       to={to}
       end={end}
+      onClick={onClick}
       className={({ isActive }) =>
         cn(
           'group flex h-7 items-center gap-2 rounded-md px-2 text-[13px] text-sidebar-foreground/85 transition-colors',
@@ -63,7 +64,7 @@ function Section({ title, children, defaultOpen = true }) {
   )
 }
 
-function TeamGroup({ team }) {
+function TeamGroup({ team, onClose }) {
   const [open, setOpen] = useState(true)
   const base = `/team/${team.key}`
   return (
@@ -81,10 +82,10 @@ function TeamGroup({ team }) {
       </button>
       {open && (
         <div className="space-y-px animate-fade-in">
-          <NavItem to={`${base}/home`} icon={House} indent>Home</NavItem>
-          <NavItem to={`${base}/issues`} icon={Copy} indent>Issues</NavItem>
-          <NavItem to={`${base}/projects`} icon={Box} indent>Projects</NavItem>
-          <NavItem to={`${base}/views`} icon={Layers} indent>Views</NavItem>
+          <NavItem to={`${base}/home`} icon={House} indent onClick={onClose}>Home</NavItem>
+          <NavItem to={`${base}/issues`} icon={Copy} indent onClick={onClose}>Issues</NavItem>
+          <NavItem to={`${base}/projects`} icon={Box} indent onClick={onClose}>Projects</NavItem>
+          <NavItem to={`${base}/views`} icon={Layers} indent onClick={onClose}>Views</NavItem>
         </div>
       )}
     </div>
@@ -176,11 +177,11 @@ function WhatsNewCard() {
   )
 }
 
-export default function Sidebar() {
+export default function Sidebar({ className, onClose }) {
   const { teams } = useWorkspace()
 
   return (
-    <aside className="flex h-full w-[236px] shrink-0 flex-col px-2 pb-2 pt-2.5">
+    <aside className={cn('flex h-full w-[260px] md:w-[236px] shrink-0 flex-col px-2 pb-2 pt-2.5 bg-sidebar', className)}>
       {/* Header */}
       <div className="flex items-center justify-between gap-1 pr-0.5">
         <WorkspaceSwitcher />
@@ -191,19 +192,29 @@ export default function Sidebar() {
           <button type="button" aria-label="Nuevo issue" className="grid size-7 place-items-center rounded-full bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/80">
             <SquarePen className="size-3.5" />
           </button>
+          {onClose && (
+            <button
+              type="button"
+              aria-label="Cerrar menú"
+              onClick={onClose}
+              className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-sidebar-accent hover:text-foreground md:hidden"
+            >
+              <X className="size-4" />
+            </button>
+          )}
         </div>
       </div>
 
       <nav className="mt-3 flex-1 overflow-y-auto">
         <div className="space-y-px">
-          <NavItem to="/inbox" icon={Inbox}>Inbox</NavItem>
-          <NavItem to="/my-issues" icon={CircleDot}>My issues</NavItem>
-          <NavItem to="/agent" icon={Send}>Agent</NavItem>
+          <NavItem to="/inbox" icon={Inbox} onClick={onClose}>Inbox</NavItem>
+          <NavItem to="/my-issues" icon={CircleDot} onClick={onClose}>My issues</NavItem>
+          <NavItem to="/agent" icon={Send} onClick={onClose}>Agent</NavItem>
         </div>
 
         <Section title="Workspace">
-          <NavItem to="/projects" icon={Box}>Projects</NavItem>
-          <NavItem to="/views" icon={Layers}>Views</NavItem>
+          <NavItem to="/projects" icon={Box} onClick={onClose}>Projects</NavItem>
+          <NavItem to="/views" icon={Layers} onClick={onClose}>Views</NavItem>
           <ActionItem icon={Ellipsis}>More</ActionItem>
         </Section>
 
@@ -211,7 +222,7 @@ export default function Sidebar() {
           {teams.length === 0 && (
             <p className="px-2 py-1 text-xs text-muted-foreground">Sin teams todavía</p>
           )}
-          {teams.map((t) => <TeamGroup key={t.id} team={t} />)}
+          {teams.map((t) => <TeamGroup key={t.id} team={t} onClose={onClose} />)}
         </Section>
 
         <Section title="Try">

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
+  ArrowLeft,
   ArrowUp,
   Bell,
   Check,
@@ -450,23 +451,32 @@ export default function IssueDetailPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Top Breadcrumb & Actions Bar */}
-      <header className="flex h-11 shrink-0 items-center justify-between border-b border-subtle px-4">
-        {/* Left: Breadcrumbs */}
-        <div className="flex min-w-0 items-center gap-1.5 text-[13px]">
-          <span className="grid size-4 place-items-center rounded bg-primary/20 text-[9px] font-bold text-primary">
-            {teamKey.slice(0, 2)}
-          </span>
-          <span className="font-medium text-foreground">{activeTeam?.name || 'Wudlet AI'}</span>
-          <ChevronRight className="size-3 text-muted-foreground" />
+      <header className="flex h-11 shrink-0 items-center justify-between border-b border-subtle px-2 sm:px-4">
+        {/* Left: Breadcrumbs & Back */}
+        <div className="flex min-w-0 items-center gap-1 sm:gap-1.5 text-[13px]">
           <Link
             to={`/team/${teamKey}/issues/active`}
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground shrink-0"
+            aria-label="Volver a issues"
           >
-            Issues
+            <ArrowLeft className="size-4" />
           </Link>
-          <ChevronRight className="size-3 text-muted-foreground" />
-          <span className="text-muted-foreground shrink-0">{issueKey}</span>
-          <span className="truncate max-w-[200px] sm:max-w-md font-medium text-foreground">
+          <span className="hidden sm:inline-flex items-center gap-1.5 shrink-0">
+            <span className="grid size-4 place-items-center rounded bg-primary/20 text-[9px] font-bold text-primary">
+              {teamKey.slice(0, 2)}
+            </span>
+            <span className="font-medium text-foreground">{activeTeam?.name || 'VozDesk'}</span>
+            <ChevronRight className="size-3 text-muted-foreground" />
+            <Link
+              to={`/team/${teamKey}/issues/active`}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Issues
+            </Link>
+            <ChevronRight className="size-3 text-muted-foreground" />
+          </span>
+          <span className="text-muted-foreground shrink-0 font-medium">{issueKey}</span>
+          <span className="truncate max-w-[140px] sm:max-w-md font-medium text-foreground">
             {issue.title}
           </span>
 
@@ -476,7 +486,7 @@ export default function IssueDetailPage() {
             aria-label="Favorito"
             onClick={toggleFavorite}
             className={cn(
-              'ml-1 grid size-6 place-items-center rounded transition-colors',
+              'ml-0.5 sm:ml-1 grid size-6 place-items-center rounded transition-colors shrink-0',
               isFavorite
                 ? 'text-yellow-400 hover:bg-accent'
                 : 'text-muted-foreground hover:bg-accent hover:text-foreground',
@@ -484,7 +494,37 @@ export default function IssueDetailPage() {
           >
             <Star className={cn('size-3.5', isFavorite && 'fill-yellow-400')} />
           </button>
+        </div>
 
+        {/* Right action icons */}
+        <div className="flex items-center gap-1 shrink-0">
+          <div className="hidden sm:flex items-center gap-1">
+            <button
+              type="button"
+              aria-label="Copiar link"
+              title={copiedLink ? '¡Copiado!' : 'Copiar enlace'}
+              onClick={copyIssueUrl}
+              className="grid size-7 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-subtle hover:bg-accent hover:text-foreground"
+            >
+              {copiedLink ? <Check className="size-3.5 text-emerald-400" /> : <Link2 className="size-3.5" />}
+            </button>
+            <button
+              type="button"
+              aria-label="Copiar branch"
+              title="Copiar branch git"
+              onClick={copyBranchName}
+              className="grid size-7 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-subtle hover:bg-accent hover:text-foreground"
+            >
+              <GitBranch className="size-3.5" />
+            </button>
+            <button
+              type="button"
+              aria-label="Opciones de vista"
+              className="grid size-7 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-subtle hover:bg-accent hover:text-foreground"
+            >
+              <SlidersHorizontal className="size-3.5" />
+            </button>
+          </div>
           {/* More options dropdown */}
           <PopoverDropdown
             open={moreOpen}
@@ -493,7 +533,7 @@ export default function IssueDetailPage() {
               <button
                 type="button"
                 aria-label="Más opciones"
-                className="grid size-6 place-items-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+                className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
               >
                 <MoreHorizontal className="size-3.5" />
               </button>
@@ -532,41 +572,12 @@ export default function IssueDetailPage() {
             </button>
           </PopoverDropdown>
         </div>
-
-        {/* Right action icons */}
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            aria-label="Copiar link"
-            title={copiedLink ? '¡Copiado!' : 'Copiar enlace'}
-            onClick={copyIssueUrl}
-            className="grid size-7 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-subtle hover:bg-accent hover:text-foreground"
-          >
-            {copiedLink ? <Check className="size-3.5 text-emerald-400" /> : <Link2 className="size-3.5" />}
-          </button>
-          <button
-            type="button"
-            aria-label="Copiar branch"
-            title="Copiar branch git"
-            onClick={copyBranchName}
-            className="grid size-7 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-subtle hover:bg-accent hover:text-foreground"
-          >
-            <GitBranch className="size-3.5" />
-          </button>
-          <button
-            type="button"
-            aria-label="Opciones de vista"
-            className="grid size-7 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-subtle hover:bg-accent hover:text-foreground"
-          >
-            <SlidersHorizontal className="size-3.5" />
-          </button>
-        </div>
       </header>
 
-      {/* Main Container: 2 Columns */}
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row overflow-hidden">
+      {/* Main Container: 2 Columns on desktop, single smooth scroll on mobile */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
         {/* Left Column: Title, Description, Sub-issues, Activity */}
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 lg:px-12 lg:py-8">
+        <div className="w-full lg:min-h-0 lg:flex-1 lg:overflow-y-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-12 lg:py-8">
           <div className="max-w-3xl space-y-6">
             {/* Issue Title */}
             <div>
@@ -836,7 +847,7 @@ export default function IssueDetailPage() {
         </div>
 
         {/* Right Sidebar: Properties */}
-        <aside className="w-full lg:w-72 lg:shrink-0 border-t lg:border-t-0 lg:border-l border-subtle p-5 space-y-6 overflow-y-auto">
+        <aside className="w-full shrink-0 lg:w-72 lg:overflow-y-auto border-t lg:border-t-0 lg:border-l border-subtle p-4 sm:p-5 space-y-5">
           {/* Properties Header */}
           <div className="text-[13px] font-medium text-muted-foreground">Properties</div>
 

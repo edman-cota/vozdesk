@@ -29,6 +29,7 @@ import IssuesKanban from '@/components/issues/IssuesKanban'
 import {
   PriorityIcon, STATUS_BY_ID, STATUSES, StatusIcon, TAB_STATUSES,
 } from '@/components/issues/issue-meta'
+import { SidebarTrigger } from '@/context/SidebarContext'
 
 const TABS = [
   { id: 'active', label: 'Active' },
@@ -123,35 +124,35 @@ function IssueRow({ issue, teamKey, onStatusChange, dragHandleProps }) {
           navigate(`/team/${teamKey}/issue/${teamKey}-${issue.number}`)
         }
       }}
-      className="group flex h-11 cursor-default items-center gap-2 rounded-md pl-2 pr-5 transition-colors hover:bg-white/[0.035] focus:outline-none focus:bg-white/[0.035]"
+      className="group flex h-11 cursor-default items-center gap-1.5 sm:gap-2 rounded-md px-2 sm:pr-5 transition-colors hover:bg-white/[0.035] focus:outline-none focus:bg-white/[0.035]"
     >
       <button
         type="button"
         {...dragHandleProps}
         onClick={(e) => e.stopPropagation()}
-        className="grid size-6 place-items-center rounded text-muted-foreground/30 opacity-0 group-hover:opacity-100 hover:text-foreground transition-opacity cursor-grab active:cursor-grabbing"
+        className="hidden sm:grid size-6 place-items-center rounded text-muted-foreground/30 opacity-0 group-hover:opacity-100 hover:text-foreground transition-opacity cursor-grab active:cursor-grabbing"
         title="Drag to reorder"
       >
         <GripVertical className="size-3.5" />
       </button>
-      <PriorityIcon priority={issue.priority} />
-      <span className="w-14 shrink-0 text-[13px] tabular-nums text-muted-foreground">{teamKey}-{issue.number}</span>
-      <StatusMenu value={issue.status} onChange={(s) => onStatusChange(issue.id, s)} />
-      <span className={cn('min-w-0 flex-1 truncate text-[13px] font-medium text-foreground/90 group-hover:text-foreground', issue.status === 'canceled' && 'text-muted-foreground line-through')}>
+      <span className="shrink-0"><PriorityIcon priority={issue.priority} /></span>
+      <span className="w-12 sm:w-14 shrink-0 text-xs sm:text-[13px] tabular-nums text-muted-foreground">{teamKey}-{issue.number}</span>
+      <span className="shrink-0"><StatusMenu value={issue.status} onChange={(s) => onStatusChange(issue.id, s)} /></span>
+      <span className={cn('min-w-0 flex-1 truncate text-xs sm:text-[13px] font-medium text-foreground/90 group-hover:text-foreground', issue.status === 'canceled' && 'text-muted-foreground line-through')}>
         {issue.title}
       </span>
       {issue.source === 'voice' && (
-        <span title="Creado por voz" className="flex items-center gap-1 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-1.5 py-0.5 text-[10px] font-medium text-fuchsia-300">
+        <span title="Creado por voz" className="hidden sm:flex shrink-0 items-center gap-1 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-1.5 py-0.5 text-[10px] font-medium text-fuchsia-300">
           <Mic className="size-2.5" /> voz
         </span>
       )}
       {issue.due_date && (
-        <span className={cn('rounded-full border px-1.5 py-0.5 text-[11px]', overdue ? 'border-red-500/30 text-red-400' : 'border-subtle text-muted-foreground')}>
+        <span className={cn('hidden sm:inline-flex shrink-0 rounded-full border px-1.5 py-0.5 text-[10px] sm:text-[11px]', overdue ? 'border-red-500/30 text-red-400' : 'border-subtle text-muted-foreground')}>
           {fmtDate(issue.due_date)}
         </span>
       )}
-      <Avatar person={issue.assignee} />
-      <span className="w-12 shrink-0 text-right text-xs text-muted-foreground">{fmtDate(issue.created_at)}</span>
+      <span className="shrink-0"><Avatar person={issue.assignee} /></span>
+      <span className="hidden sm:inline-block w-12 shrink-0 text-right text-xs text-muted-foreground">{fmtDate(issue.created_at)}</span>
     </div>
   )
 }
@@ -403,31 +404,32 @@ export default function IssuesPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Header */}
-      <header className="flex h-11 shrink-0 items-center justify-between border-b border-subtle px-4">
-        <div className="flex items-center gap-1.5 text-[13px]">
-          <span className="text-muted-foreground">{team.name}</span>
-          <ChevronRight className="size-3 text-muted-foreground" />
-          <span className="font-medium">Issues</span>
-          <button type="button" aria-label="Favorito" className="ml-1 grid size-6 place-items-center rounded text-muted-foreground hover:bg-accent hover:text-yellow-400">
+      <header className="flex h-11 shrink-0 items-center justify-between border-b border-subtle px-2 sm:px-4">
+        <div className="flex min-w-0 items-center gap-1 sm:gap-1.5 text-[13px]">
+          <SidebarTrigger />
+          <span className="truncate max-w-[100px] sm:max-w-none text-muted-foreground">{team.name}</span>
+          <ChevronRight className="size-3 shrink-0 text-muted-foreground" />
+          <span className="shrink-0 font-medium">Issues</span>
+          <button type="button" aria-label="Favorito" className="grid size-6 shrink-0 place-items-center rounded text-muted-foreground hover:bg-accent hover:text-yellow-400">
             <Star className="size-3.5" />
           </button>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           <IconButton label="Notificaciones"><Bell className="size-3.5" /></IconButton>
           <button
             id="new-issue-button"
             type="button"
             onClick={() => openNew()}
-            className="flex h-7 items-center gap-1.5 rounded-md px-2 text-[13px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="flex h-7 items-center gap-1 sm:gap-1.5 rounded-md bg-primary/10 px-2 text-xs sm:text-[13px] font-medium text-primary hover:bg-primary/20 sm:bg-transparent sm:text-muted-foreground sm:hover:bg-accent sm:hover:text-foreground transition-colors"
           >
-            <Plus className="size-3.5" /> New issue
+            <Plus className="size-3.5" /> <span className="hidden sm:inline">New issue</span><span className="sm:hidden">New</span>
           </button>
         </div>
       </header>
 
       {/* Tabs */}
-      <div className="flex h-11 shrink-0 items-center justify-between px-3">
-        <div className="flex items-center gap-1">
+      <div className="flex h-10 shrink-0 items-center justify-between gap-2 border-b border-subtle/50 px-2 sm:px-3">
+        <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto no-scrollbar py-1">
           {TABS.map((t) => (
             <NavLink
               key={t.id}
@@ -435,9 +437,9 @@ export default function IssuesPage() {
               to={`/team/${team.key}/issues/${t.id}`}
               className={() =>
                 cn(
-                  'flex h-7 items-center rounded-full border px-3 text-[13px] transition-colors',
+                  'flex h-7 shrink-0 items-center whitespace-nowrap rounded-full border px-2.5 sm:px-3 text-xs sm:text-[13px] transition-colors',
                   tab === t.id
-                    ? 'border-subtle bg-white/[0.06] text-foreground'
+                    ? 'border-subtle bg-white/[0.06] text-foreground font-medium'
                     : 'border-subtle text-muted-foreground hover:bg-white/[0.03] hover:text-foreground',
                 )
               }
@@ -447,10 +449,12 @@ export default function IssuesPage() {
           ))}
           <IconButton label="Nueva vista" onClick={() => navigate('/views')}><Layers className="size-3.5" /></IconButton>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-0.5">
           <IconButton label="Filtrar"><ListFilter className="size-3.5" /></IconButton>
           <IconButton label="Opciones de vista"><SlidersHorizontal className="size-3.5" /></IconButton>
-          <IconButton label="Panel lateral"><PanelRight className="size-3.5" /></IconButton>
+          <div className="hidden md:block">
+            <IconButton label="Panel lateral"><PanelRight className="size-3.5" /></IconButton>
+          </div>
         </div>
       </div>
 

@@ -115,9 +115,9 @@ export default function IssuesDashboard({ issues = [], team }) {
   }
 
   return (
-    <div className="space-y-6 px-4 py-3 md:px-6 md:py-4 max-w-7xl mx-auto w-full">
+    <div className="space-y-4 sm:space-y-6 px-3 py-3 md:px-6 md:py-4 max-w-7xl mx-auto w-full">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-subtle pb-3">
+      <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between border-b border-subtle pb-3">
         <div>
           <h2 className="text-base font-semibold text-foreground">
             {team?.name ?? 'Team'} Overview
@@ -149,14 +149,14 @@ export default function IssuesDashboard({ issues = [], team }) {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-4">
         <Card className="border-subtle bg-white/[0.02]">
-          <CardHeader className="flex flex-row items-center justify-between p-4 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-4 pb-1 sm:pb-2">
             <CardTitle className="text-xs font-normal text-muted-foreground">Total</CardTitle>
             <Layers className="size-3.5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="text-2xl font-semibold tracking-tight text-foreground">{metrics.total}</div>
+          <CardContent className="p-3 sm:p-4 pt-0">
+            <div className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">{metrics.total}</div>
             <p className="text-[11px] text-muted-foreground mt-0.5">{metrics.todo} pending</p>
           </CardContent>
         </Card>

@@ -221,7 +221,7 @@ function KanbanColumn({
       <div
         ref={setNodeRef}
         style={style}
-        className="flex h-full min-h-[500px] w-72 shrink-0 flex-col rounded-xl border border-dashed border-subtle bg-white/[0.01] opacity-40"
+        className="flex h-full min-h-[400px] sm:min-h-[500px] w-[84vw] max-w-[320px] sm:w-72 shrink-0 snap-center flex-col rounded-xl border border-dashed border-subtle bg-white/[0.01] opacity-40"
       />
     )
   }
@@ -231,7 +231,7 @@ function KanbanColumn({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'flex h-full min-h-[500px] w-72 shrink-0 flex-col rounded-xl border transition-colors',
+        'flex h-full min-h-[400px] sm:min-h-[500px] w-[84vw] max-w-[320px] sm:w-72 shrink-0 snap-center flex-col rounded-xl border transition-colors',
         isOverColumn ? 'border-foreground/30 bg-white/[0.03]' : 'border-subtle bg-white/[0.015]'
       )}
     >
@@ -567,7 +567,7 @@ export default function IssuesKanban({ issues = [], team, onStatusChange, onOpen
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <div className="flex flex-1 items-start gap-4 overflow-x-auto p-4 md:p-6">
+        <div className="flex flex-1 items-start gap-3 sm:gap-4 overflow-x-auto p-3 sm:p-4 md:p-6 snap-x snap-mandatory scroll-smooth">
           <SortableContext items={columns} strategy={horizontalListSortingStrategy}>
             {columns.map((columnId) => (
               <KanbanColumn

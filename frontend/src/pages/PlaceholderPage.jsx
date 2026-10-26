@@ -1,11 +1,13 @@
 import { Mic } from 'lucide-react'
+import { SidebarTrigger } from '@/context/SidebarContext'
 
 /** Vista vacía para secciones aún no implementadas (Inbox, Agent, Projects…) */
 export default function PlaceholderPage({ title, description, icon: Icon = Mic }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex h-11 shrink-0 items-center border-b border-subtle px-4 text-[13px] font-medium">
-        {title}
+      <header className="flex h-11 shrink-0 items-center gap-2 border-b border-subtle px-2 sm:px-4 text-[13px] font-medium">
+        <SidebarTrigger />
+        <span>{title}</span>
       </header>
       <div className="grid flex-1 place-items-center p-6">
         <div className="max-w-sm text-center animate-fade-in">
