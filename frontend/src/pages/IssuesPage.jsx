@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useWorkspace } from '@/context/WorkspaceContext'
 import NewIssueDialog from '@/components/issues/NewIssueDialog'
+import IssuesDashboard from '@/components/issues/IssuesDashboard'
 import {
   PriorityIcon, STATUS_BY_ID, STATUSES, StatusIcon, TAB_STATUSES,
 } from '@/components/issues/issue-meta'
@@ -15,6 +16,7 @@ const TABS = [
   { id: 'active', label: 'Active' },
   { id: 'backlog', label: 'Backlog' },
   { id: 'all', label: 'All issues' },
+  { id: 'dashboard', label: 'Dashboard' },
 ]
 
 const SELECT = '*, assignee:profiles!issues_assignee_id_fkey(id, full_name, avatar_url)'
@@ -195,6 +197,7 @@ export default function IssuesPage() {
   }, [team, load])
 
   const groups = useMemo(() => {
+    if (tab === 'dashboard') return []
     const visible = TAB_STATUSES[tab] ?? TAB_STATUSES.active
     return visible
       .map((s) => ({ status: s, items: issues.filter((i) => i.status === s) }))
@@ -273,12 +276,17 @@ export default function IssuesPage() {
         </div>
       </div>
 
-      {/* Lista */}
+      {/* Contenido / Dashboard / Lista */}
       <div className="min-h-0 flex-1 overflow-y-auto pb-6">
         {loading ? (
           <div className="space-y-2 p-4">
             {[0, 1, 2].map((i) => <div key={i} className="h-9 animate-pulse rounded-md bg-white/[0.03]" />)}
           </div>
+        ) : tab === 'dashboard' ? (
+          <IssuesDashboard
+            issues={issues}
+            team={team}
+          />
         ) : groups.length === 0 ? (
           <div className="grid h-full place-items-center">
             <div className="max-w-sm text-center animate-fade-in">
