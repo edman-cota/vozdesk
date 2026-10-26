@@ -47,7 +47,7 @@ export function WorkspaceProvider({ children }) {
     localStorage.setItem(STORAGE_KEY, workspaceId)
     supabase
       .from('teams')
-      .select('id, name, key, issue_counter')
+      .select('id, name, key, issue_counter, status_order')
       .eq('workspace_id', workspaceId)
       .order('created_at')
       .then(({ data }) => setTeams(data ?? []))

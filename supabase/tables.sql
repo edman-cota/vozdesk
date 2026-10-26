@@ -1,4 +1,4 @@
-﻿-- =============================================================================
+-- =============================================================================
 -- REFERENCIA: estado actual del esquema de VozDesk.
 -- NO ejecutar directamente: los cambios se aplican con archivos en supabase/migrations/.
 -- Mantener sincronizado con la última migración.
@@ -80,6 +80,7 @@ create table public.teams (
   name           text not null check (char_length(name) between 1 and 80),
   key            text not null check (key ~ '^[A-Z][A-Z0-9]{1,6}$'),
   issue_counter  integer not null default 0 check (issue_counter >= 0),
+  status_order   text[] default null,
   created_at     timestamptz not null default now(),
   updated_at     timestamptz not null default now(),
   unique (workspace_id, key)
@@ -150,6 +151,7 @@ create table public.issues (
   creator_id    uuid references public.profiles (id) on delete set null default auth.uid(),
   due_date      date,
   source        text not null default 'manual' check (source in ('manual', 'voice')),
+  sort_order    double precision not null default 0,
   completed_at  timestamptz,
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now(),
@@ -158,6 +160,7 @@ create table public.issues (
 
 create index issues_workspace_idx on public.issues (workspace_id);
 create index issues_team_status_idx on public.issues (team_id, status);
+create index issues_team_sort_order_idx on public.issues (team_id, status, sort_order);
 create index issues_assignee_idx on public.issues (assignee_id);
 create index issues_project_idx on public.issues (project_id);
 
@@ -451,6 +454,11 @@ create policy "teams: admins actualizan"
   on public.teams for update to authenticated
   using (public.is_workspace_admin(workspace_id))
   with check (public.is_workspace_admin(workspace_id));
+
+create policy "teams: miembros actualizan configuracion"
+  on public.teams for update to authenticated
+  using (public.is_workspace_member(workspace_id))
+  with check (public.is_workspace_member(workspace_id));
 
 create policy "teams: admins eliminan"
   on public.teams for delete to authenticated

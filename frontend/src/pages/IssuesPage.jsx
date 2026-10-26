@@ -1,8 +1,25 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, useNavigate, useParams } from 'react-router-dom'
 import {
-  Bell, ChevronRight, Layers, ListFilter, Mic, PanelRight, Plus, SlidersHorizontal, Star, UserRound,
+  Bell, ChevronRight, GripVertical, Layers, ListFilter, Mic, PanelRight, Plus, SlidersHorizontal, Star, UserRound,
 } from 'lucide-react'
+import {
+  DndContext,
+  DragOverlay,
+  MouseSensor,
+  TouchSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  closestCorners,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useWorkspace } from '@/context/WorkspaceContext'
@@ -92,7 +109,7 @@ function isOverdue(dueDate, status) {
   return new Date(`${dueDate}T23:59:59`).getTime() < Date.now()
 }
 
-function IssueRow({ issue, teamKey, onStatusChange }) {
+function IssueRow({ issue, teamKey, onStatusChange, dragHandleProps }) {
   const navigate = useNavigate()
   const overdue = isOverdue(issue.due_date, issue.status)
   return (
@@ -106,8 +123,17 @@ function IssueRow({ issue, teamKey, onStatusChange }) {
           navigate(`/team/${teamKey}/issue/${teamKey}-${issue.number}`)
         }
       }}
-      className="group flex h-11 cursor-default items-center gap-3 rounded-md pl-6 pr-5 transition-colors hover:bg-white/[0.035] focus:outline-none focus:bg-white/[0.035]"
+      className="group flex h-11 cursor-default items-center gap-2 rounded-md pl-2 pr-5 transition-colors hover:bg-white/[0.035] focus:outline-none focus:bg-white/[0.035]"
     >
+      <button
+        type="button"
+        {...dragHandleProps}
+        onClick={(e) => e.stopPropagation()}
+        className="grid size-6 place-items-center rounded text-muted-foreground/30 opacity-0 group-hover:opacity-100 hover:text-foreground transition-opacity cursor-grab active:cursor-grabbing"
+        title="Drag to reorder"
+      >
+        <GripVertical className="size-3.5" />
+      </button>
       <PriorityIcon priority={issue.priority} />
       <span className="w-14 shrink-0 text-[13px] tabular-nums text-muted-foreground">{teamKey}-{issue.number}</span>
       <StatusMenu value={issue.status} onChange={(s) => onStatusChange(issue.id, s)} />
@@ -130,9 +156,65 @@ function IssueRow({ issue, teamKey, onStatusChange }) {
   )
 }
 
-function StatusGroup({ status, issues, teamKey, onAdd, onStatusChange }) {
+function SortableIssueRow({ issue, teamKey, onStatusChange, activeDragId }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+    isOver,
+  } = useSortable({
+    id: issue.id,
+    data: {
+      type: 'issue',
+      issue,
+    },
+  })
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition: isDragging ? undefined : transition,
+  }
+
+  const showDropIndicator = isOver && activeDragId && activeDragId !== issue.id
+
+  if (isDragging) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="flex h-11 items-center rounded-md border border-dashed border-subtle bg-white/[0.015] px-6 text-xs text-muted-foreground/60 opacity-40 select-none"
+      >
+        <span>Dragging {teamKey}-{issue.number}</span>
+      </div>
+    )
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} className="relative select-none">
+      {showDropIndicator && (
+        <div className="pointer-events-none absolute -top-1 left-4 right-4 z-20 flex items-center">
+          <div className="size-2 rounded-full bg-foreground shadow-sm shadow-black" />
+          <div className="h-0.5 flex-1 rounded-full bg-foreground shadow-sm shadow-black" />
+        </div>
+      )}
+      <IssueRow
+        issue={issue}
+        teamKey={teamKey}
+        onStatusChange={onStatusChange}
+        dragHandleProps={{ ...attributes, ...listeners }}
+      />
+    </div>
+  )
+}
+
+function StatusGroup({ status, issues, teamKey, onAdd, onStatusChange, activeDragId }) {
   const [open, setOpen] = useState(true)
   const meta = STATUS_BY_ID[status]
+  const issueIds = useMemo(() => issues.map((i) => i.id), [issues])
+
   return (
     <section className="mx-2">
       <div className="sticky top-0 z-10 mt-2 flex h-9 items-center gap-2 rounded-md bg-white/[0.04] pl-2 pr-2 backdrop-blur">
@@ -147,9 +229,19 @@ function StatusGroup({ status, issues, teamKey, onAdd, onStatusChange }) {
         </button>
       </div>
       {open && (
-        <div>
-          {issues.map((i) => <IssueRow key={i.id} issue={i} teamKey={teamKey} onStatusChange={onStatusChange} />)}
-        </div>
+        <SortableContext items={issueIds} strategy={verticalListSortingStrategy}>
+          <div>
+            {issues.map((i) => (
+              <SortableIssueRow
+                key={i.id}
+                issue={i}
+                teamKey={teamKey}
+                onStatusChange={onStatusChange}
+                activeDragId={activeDragId}
+              />
+            ))}
+          </div>
+        </SortableContext>
       )}
     </section>
   )
@@ -167,7 +259,12 @@ export default function IssuesPage() {
 
   const load = useCallback(async () => {
     if (!team) return
-    const { data } = await supabase.from('issues').select(SELECT).eq('team_id', team.id).order('number', { ascending: false })
+    const { data } = await supabase
+      .from('issues')
+      .select(SELECT)
+      .eq('team_id', team.id)
+      .order('sort_order', { ascending: true })
+      .order('number', { ascending: false })
     setIssues(data ?? [])
     setLoading(false)
   }, [team])
@@ -179,6 +276,7 @@ export default function IssuesPage() {
       .from('issues')
       .select(SELECT)
       .eq('team_id', team.id)
+      .order('sort_order', { ascending: true })
       .order('number', { ascending: false })
       .then(({ data }) => {
         if (active) {
@@ -198,17 +296,96 @@ export default function IssuesPage() {
     }
   }, [team, load])
 
+  const [activeListDragItem, setActiveListDragItem] = useState(null)
+
+  const listSensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 3 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
   const groups = useMemo(() => {
     if (tab === 'dashboard' || tab === 'kanban') return []
     const visible = TAB_STATUSES[tab] ?? TAB_STATUSES.active
-    return visible
+    const savedOrder = team?.status_order
+    const orderedStatuses = savedOrder && Array.isArray(savedOrder) && savedOrder.length > 0
+      ? [...savedOrder.filter((s) => visible.includes(s)), ...visible.filter((s) => !savedOrder.includes(s))]
+      : visible
+
+    return orderedStatuses
       .map((s) => ({ status: s, items: issues.filter((i) => i.status === s) }))
       .filter((g) => g.items.length > 0)
-  }, [issues, tab])
+  }, [issues, tab, team?.status_order])
 
-  async function handleStatusChange(id, status) {
-    setIssues((prev) => prev.map((i) => (i.id === id ? { ...i, status } : i)))
-    const { error } = await supabase.from('issues').update({ status }).eq('id', id)
+  function handleListDragStart(event) {
+    setActiveListDragItem(event.active.data.current)
+  }
+
+  function handleListDragEnd(event) {
+    const { active, over } = event
+    setActiveListDragItem(null)
+    if (!over) return
+
+    const activeId = active.id
+    const activeData = active.data.current
+    const overData = over.data.current
+    if (activeData?.type !== 'issue') return
+
+    const activeIssue = activeData.issue
+    let targetStatus = null
+    let targetIssueId = null
+
+    if (overData?.type === 'issue') {
+      targetStatus = overData.issue.status
+      targetIssueId = over.id
+    } else {
+      const found = issues.find((i) => i.id === over.id)
+      if (found) {
+        targetStatus = found.status
+        targetIssueId = found.id
+      }
+    }
+
+    if (!targetStatus) return
+
+    const colIssues = issues.filter((i) => i.status === targetStatus && i.id !== activeId)
+    let insertIdx = colIssues.length
+    if (targetIssueId && targetIssueId !== activeId) {
+      const idx = colIssues.findIndex((i) => i.id === targetIssueId)
+      if (idx !== -1) insertIdx = idx
+    }
+
+    const updatedCol = [...colIssues]
+    updatedCol.splice(insertIdx, 0, { ...activeIssue, status: targetStatus })
+
+    let calculatedSortOrder = 1000
+    if (updatedCol.length === 1) {
+      calculatedSortOrder = 1000
+    } else if (insertIdx === 0) {
+      const nextIssue = updatedCol[1]
+      calculatedSortOrder = (nextIssue.sort_order ?? 1000) - 1000
+    } else if (insertIdx === updatedCol.length - 1) {
+      const prevIssue = updatedCol[updatedCol.length - 2]
+      calculatedSortOrder = (prevIssue.sort_order ?? 0) + 1000
+    } else {
+      const prevIssue = updatedCol[insertIdx - 1]
+      const nextIssue = updatedCol[insertIdx + 1]
+      const prevSort = prevIssue.sort_order ?? 0
+      const nextSort = nextIssue.sort_order ?? (prevSort + 2000)
+      calculatedSortOrder = (prevSort + nextSort) / 2
+      if (calculatedSortOrder === prevSort) calculatedSortOrder = prevSort + 0.5
+    }
+
+    handleStatusChange(activeId, targetStatus, calculatedSortOrder)
+  }
+
+  async function handleStatusChange(id, status, sortOrder) {
+    const updates = {}
+    if (status !== undefined) updates.status = status
+    if (sortOrder !== undefined) updates.sort_order = sortOrder
+
+    setIssues((prev) => prev.map((i) => (i.id === id ? { ...i, ...updates } : i)))
+    const { error } = await supabase.from('issues').update(updates).eq('id', id)
     if (error) load()
   }
 
@@ -311,16 +488,36 @@ export default function IssuesPage() {
             </div>
           </div>
         ) : (
-          groups.map((g) => (
-            <StatusGroup
-              key={g.status}
-              status={g.status}
-              issues={g.items}
-              teamKey={team.key}
-              onAdd={openNew}
-              onStatusChange={handleStatusChange}
-            />
-          ))
+          <DndContext
+            sensors={listSensors}
+            collisionDetection={closestCorners}
+            onDragStart={handleListDragStart}
+            onDragEnd={handleListDragEnd}
+            onDragCancel={() => setActiveListDragItem(null)}
+          >
+            {groups.map((g) => (
+              <StatusGroup
+                key={g.status}
+                status={g.status}
+                issues={g.items}
+                teamKey={team.key}
+                onAdd={openNew}
+                onStatusChange={handleStatusChange}
+                activeDragId={activeListDragItem?.issue?.id}
+              />
+            ))}
+            <DragOverlay dropAnimation={null}>
+              {activeListDragItem?.type === 'issue' && (
+                <div className="rounded-md border border-foreground/20 bg-card p-1 shadow-2xl shadow-black/90">
+                  <IssueRow
+                    issue={activeListDragItem.issue}
+                    teamKey={team.key}
+                    onStatusChange={() => {}}
+                  />
+                </div>
+              )}
+            </DragOverlay>
+          </DndContext>
         )}
       </div>
 

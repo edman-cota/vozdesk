@@ -26,13 +26,21 @@ import {
   Plus,
   UserRound,
 } from 'lucide-react'
-import {
-  PriorityIcon,
-  STATUS_BY_ID,
-  STATUSES,
-  StatusIcon,
-} from '@/components/issues/issue-meta'
+import { PriorityIcon, STATUS_BY_ID, STATUSES, StatusIcon } from '@/components/issues/issue-meta'
+import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+
+function getInitialColumns(savedColumns) {
+  const all = STATUSES.map((s) => s.id)
+  if (!savedColumns || !Array.isArray(savedColumns) || savedColumns.length === 0) {
+    return all
+  }
+  const merged = savedColumns.filter((id) => all.includes(id))
+  all.forEach((id) => {
+    if (!merged.includes(id)) merged.push(id)
+  })
+  return merged
+}
 
 function isOverdue(dueDate, status) {
   if (!dueDate || ['done', 'canceled'].includes(status)) return false
@@ -326,12 +334,19 @@ export default function IssuesKanban({ issues = [], team, onStatusChange, onOpen
 
   // Columns order state (allow rearranging columns left and right)
   const [columns, setColumns] = useState(() =>
-    STATUSES.map((s) => s.id)
+    getInitialColumns(team?.status_order)
   )
 
   const [localIssues, setLocalIssues] = useState(issues)
   const [activeItem, setActiveItem] = useState(null)
   const [overColumnId, setOverColumnId] = useState(null)
+
+  // Sync columns if team's saved status order changes or switches team
+  useEffect(() => {
+    if (team?.status_order) {
+      setColumns(getInitialColumns(team.status_order))
+    }
+  }, [team?.id, team?.status_order])
 
   // Sync props issues when not dragging
   useEffect(() => {
@@ -424,11 +439,23 @@ export default function IssuesKanban({ issues = [], team, onStatusChange, onOpen
         : findColumnForId(over.id, localIssues, columns)
 
       if (targetCol && active.id !== targetCol) {
-        setColumns((prev) => {
-          const oldIndex = prev.indexOf(active.id)
-          const newIndex = prev.indexOf(targetCol)
-          return arrayMove(prev, oldIndex, newIndex)
-        })
+        const oldIndex = columns.indexOf(active.id)
+        const newIndex = columns.indexOf(targetCol)
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const newOrder = arrayMove(columns, oldIndex, newIndex)
+          setColumns(newOrder)
+
+          // Persist column order to database asynchronously (fire-and-forget, zero lag)
+          if (team?.id) {
+            supabase
+              .from('teams')
+              .update({ status_order: newOrder })
+              .eq('id', team.id)
+              .then(({ error }) => {
+                if (error) console.error('Error saving column order:', error)
+              })
+          }
+        }
       }
       return
     }
@@ -452,39 +479,71 @@ export default function IssuesKanban({ issues = [], team, onStatusChange, onOpen
 
       if (!targetStatus) return
 
+      let calculatedSortOrder = activeIssue.sort_order ?? 0
+
       // Update local issues order and status cleanly
       setLocalIssues((prev) => {
         const activeIdx = prev.findIndex((i) => i.id === activeId)
         if (activeIdx === -1) return prev
 
-        const updatedIssue = { ...prev[activeIdx], status: targetStatus }
         const next = [...prev]
-        next.splice(activeIdx, 1)
+        const currentItem = next.splice(activeIdx, 1)[0]
 
         if (targetIssueId && targetIssueId !== activeId) {
           const targetIdx = next.findIndex((i) => i.id === targetIssueId)
           if (targetIdx !== -1) {
-            next.splice(targetIdx, 0, updatedIssue)
-            return next
+            next.splice(targetIdx, 0, { ...currentItem, status: targetStatus })
+          } else {
+            next.push({ ...currentItem, status: targetStatus })
+          }
+        } else {
+          // Put at end of target column
+          let insertIdx = next.length
+          for (let i = next.length - 1; i >= 0; i--) {
+            if (next[i].status === targetStatus) {
+              insertIdx = i + 1
+              break
+            }
+          }
+          next.splice(insertIdx, 0, { ...currentItem, status: targetStatus })
+        }
+
+        // Calculate fractional sort_order based on position within targetStatus
+        const colIssues = next.filter((i) => i.status === targetStatus)
+        const colIdx = colIssues.findIndex((i) => i.id === activeId)
+
+        if (colIssues.length === 1) {
+          calculatedSortOrder = 1000
+        } else if (colIdx === 0) {
+          const nextIssue = colIssues[1]
+          calculatedSortOrder = (nextIssue.sort_order ?? 1000) - 1000
+        } else if (colIdx === colIssues.length - 1) {
+          const prevIssue = colIssues[colIssues.length - 2]
+          calculatedSortOrder = (prevIssue.sort_order ?? 0) + 1000
+        } else {
+          const prevIssue = colIssues[colIdx - 1]
+          const nextIssue = colIssues[colIdx + 1]
+          const prevSort = prevIssue.sort_order ?? 0
+          const nextSort = nextIssue.sort_order ?? (prevSort + 2000)
+          calculatedSortOrder = (prevSort + nextSort) / 2
+          if (calculatedSortOrder === prevSort) {
+            calculatedSortOrder = prevSort + 0.5
           }
         }
 
-        // Put at end of target column
-        let insertIdx = next.length
-        for (let i = next.length - 1; i >= 0; i--) {
-          if (next[i].status === targetStatus) {
-            insertIdx = i + 1
-            break
+        const finalActiveIdx = next.findIndex((i) => i.id === activeId)
+        if (finalActiveIdx !== -1) {
+          next[finalActiveIdx] = {
+            ...next[finalActiveIdx],
+            sort_order: calculatedSortOrder,
           }
         }
-        next.splice(insertIdx, 0, updatedIssue)
+
         return next
       })
 
-      // Commit to parent & Supabase once on drop
-      if (activeIssue.status !== targetStatus) {
-        onStatusChange(activeId, targetStatus)
-      }
+      // Commit to parent & Supabase once on drop (updates status and sort_order in database)
+      onStatusChange(activeId, targetStatus, calculatedSortOrder)
     }
   }
 
