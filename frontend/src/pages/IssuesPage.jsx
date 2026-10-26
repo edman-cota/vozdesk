@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { useWorkspace } from '@/context/WorkspaceContext'
 import NewIssueDialog from '@/components/issues/NewIssueDialog'
 import IssuesDashboard from '@/components/issues/IssuesDashboard'
+import IssuesKanban from '@/components/issues/IssuesKanban'
 import {
   PriorityIcon, STATUS_BY_ID, STATUSES, StatusIcon, TAB_STATUSES,
 } from '@/components/issues/issue-meta'
@@ -16,6 +17,7 @@ const TABS = [
   { id: 'active', label: 'Active' },
   { id: 'backlog', label: 'Backlog' },
   { id: 'all', label: 'All issues' },
+  { id: 'kanban', label: 'Kanban' },
   { id: 'dashboard', label: 'Dashboard' },
 ]
 
@@ -197,7 +199,7 @@ export default function IssuesPage() {
   }, [team, load])
 
   const groups = useMemo(() => {
-    if (tab === 'dashboard') return []
+    if (tab === 'dashboard' || tab === 'kanban') return []
     const visible = TAB_STATUSES[tab] ?? TAB_STATUSES.active
     return visible
       .map((s) => ({ status: s, items: issues.filter((i) => i.status === s) }))
@@ -275,12 +277,19 @@ export default function IssuesPage() {
         </div>
       </div>
 
-      {/* Contenido / Dashboard / Lista */}
-      <div className="min-h-0 flex-1 overflow-y-auto pb-6">
+      {/* Contenido / Kanban / Dashboard / Lista */}
+      <div className={cn('min-h-0 flex-1', tab === 'kanban' ? 'flex overflow-hidden' : 'overflow-y-auto pb-6')}>
         {loading ? (
           <div className="space-y-2 p-4">
             {[0, 1, 2].map((i) => <div key={i} className="h-9 animate-pulse rounded-md bg-white/[0.03]" />)}
           </div>
+        ) : tab === 'kanban' ? (
+          <IssuesKanban
+            issues={issues}
+            team={team}
+            onStatusChange={handleStatusChange}
+            onOpenNew={openNew}
+          />
         ) : tab === 'dashboard' ? (
           <IssuesDashboard
             issues={issues}
