@@ -47,12 +47,12 @@ function StatusMenu({ value, onChange }) {
   }, [open])
 
   return (
-    <div ref={ref} className="relative" onClick={(e) => e.stopPropagation()}>
+    <div ref={ref} className={cn('relative', open && 'z-50')} onClick={(e) => e.stopPropagation()}>
       <button type="button" aria-label="Cambiar estado" onClick={() => setOpen((o) => !o)} className="grid size-5 place-items-center rounded hover:bg-white/5">
         <StatusIcon status={value} />
       </button>
       {open && (
-        <div className="absolute left-0 top-6 z-40 w-44 animate-fade-in rounded-lg border bg-popover p-1 shadow-2xl shadow-black/60">
+        <div className="absolute left-0 top-6 z-50 w-44 animate-fade-in rounded-lg border border-white/10 bg-popover p-1 shadow-2xl shadow-black/80">
           {STATUSES.map((s) => (
             <button
               key={s.id}
@@ -102,7 +102,7 @@ function IssueRow({ issue, teamKey, onStatusChange }) {
           navigate(`/team/${teamKey}/issue/${teamKey}-${issue.number}`)
         }
       }}
-      className="group flex h-11 cursor-pointer items-center gap-3 border-b border-white/[0.04] pl-6 pr-5 transition-colors hover:bg-white/[0.035] focus:outline-none focus:bg-white/[0.035]"
+      className="group flex h-11 cursor-default items-center gap-3 border-b border-white/[0.04] pl-6 pr-5 transition-colors hover:bg-white/[0.035] focus:outline-none focus:bg-white/[0.035]"
     >
       <PriorityIcon priority={issue.priority} />
       <span className="w-14 shrink-0 text-[13px] tabular-nums text-muted-foreground">{teamKey}-{issue.number}</span>
@@ -143,7 +143,7 @@ function StatusGroup({ status, issues, teamKey, onAdd, onStatusChange }) {
         </button>
       </div>
       {open && (
-        <div className="animate-fade-in">
+        <div>
           {issues.map((i) => <IssueRow key={i.id} issue={i} teamKey={teamKey} onStatusChange={onStatusChange} />)}
         </div>
       )}

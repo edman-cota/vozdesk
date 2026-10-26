@@ -12,7 +12,7 @@
 
   --background: oklch(0.145 0 0);         /* fondo de la app (detrás del panel) */
   --foreground: oklch(0.93 0 0);
-  --card: oklch(0.175 0 0);               /* panel principal flotante */
+  --card: oklch(0.183 0.002 286);         /* panel principal flotante (equivalente a #121213) */
   --card-foreground: oklch(0.93 0 0);
   --popover: oklch(0.2 0 0);
   --popover-foreground: oklch(0.93 0 0);
@@ -93,6 +93,12 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased text-[13px];
+  }
+  button, [role="button"] {
+    cursor: pointer;
+  }
+  button:disabled, [role="button"][aria-disabled="true"], button[disabled] {
+    cursor: not-allowed;
   }
   ::selection {
     @apply bg-primary/40;

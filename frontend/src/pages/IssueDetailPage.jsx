@@ -448,7 +448,7 @@ export default function IssueDetailPage() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-background text-foreground">
+    <div className="flex min-h-0 flex-1 flex-col">
       {/* Top Breadcrumb & Actions Bar */}
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-white/[0.06] px-4">
         {/* Left: Breadcrumbs */}
@@ -836,7 +836,7 @@ export default function IssueDetailPage() {
         </div>
 
         {/* Right Sidebar: Properties */}
-        <aside className="w-full lg:w-72 lg:shrink-0 border-t lg:border-t-0 lg:border-l border-white/[0.06] bg-card/40 p-5 space-y-6 overflow-y-auto">
+        <aside className="w-full lg:w-72 lg:shrink-0 border-t lg:border-t-0 lg:border-l border-white/[0.06] p-5 space-y-6 overflow-y-auto">
           {/* Properties Header */}
           <div className="text-[13px] font-medium text-muted-foreground">Properties</div>
 
