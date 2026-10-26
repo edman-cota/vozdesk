@@ -470,6 +470,7 @@ export default function IssuesPage() {
             team={team}
             onStatusChange={handleStatusChange}
             onOpenNew={openNew}
+            onDeleteIssue={(id) => setIssues((prev) => prev.filter((i) => i.id !== id))}
           />
         ) : tab === 'dashboard' ? (
           <IssuesDashboard

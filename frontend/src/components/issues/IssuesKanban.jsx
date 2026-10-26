@@ -21,12 +21,17 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import {
+  Check,
+  GitBranch,
   GripVertical,
+  Link2,
   MoreHorizontal,
   Plus,
+  Trash2,
   UserRound,
 } from 'lucide-react'
-import { PriorityIcon, STATUS_BY_ID, STATUSES, StatusIcon } from '@/components/issues/issue-meta'
+import { STATUS_BY_ID, STATUSES, StatusIcon } from '@/components/issues/issue-meta'
+import { PopoverDropdown } from '@/components/ui/popover-dropdown'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -64,7 +69,92 @@ function Avatar({ person }) {
   )
 }
 
-function KanbanCardView({ issue, teamKey, isOverlay = false }) {
+
+function CardOptionsDropdown({ issue, teamKey, onDelete }) {
+  const [open, setOpen] = useState(false)
+  const [copiedLink, setCopiedLink] = useState(false)
+  const [copiedBranch, setCopiedBranch] = useState(false)
+
+  function copyIssueUrl(e) {
+    e.stopPropagation()
+    const url = `${window.location.origin}/team/${teamKey}/issue/${teamKey}-${issue.number}`
+    navigator.clipboard.writeText(url)
+    setCopiedLink(true)
+    setTimeout(() => {
+      setCopiedLink(false)
+      setOpen(false)
+    }, 1200)
+  }
+
+  function copyBranchName(e) {
+    e.stopPropagation()
+    const slug = (issue?.title || 'task')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 40)
+    const branch = `${teamKey?.toLowerCase()}-${issue?.number}-${slug}`
+    navigator.clipboard.writeText(branch)
+    setCopiedBranch(true)
+    setTimeout(() => {
+      setCopiedBranch(false)
+      setOpen(false)
+    }, 1200)
+  }
+
+  async function handleDelete(e) {
+    e.stopPropagation()
+    setOpen(false)
+    const confirmed = window.confirm('¿Seguro que deseas eliminar este issue?')
+    if (!confirmed) return
+    onDelete?.(issue.id)
+  }
+
+  return (
+    <PopoverDropdown
+      open={open}
+      onOpenChange={setOpen}
+      align="right"
+      trigger={
+        <button
+          type="button"
+          aria-label="Más opciones"
+          className="grid size-6 place-items-center rounded text-muted-foreground opacity-80 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-white/10 hover:text-foreground transition-all"
+        >
+          <MoreHorizontal className="size-3.5" />
+        </button>
+      }
+    >
+      <button
+        type="button"
+        onClick={copyIssueUrl}
+        className="flex h-7 w-full items-center gap-2 rounded-md px-2 text-[12px] text-foreground/90 hover:bg-accent hover:text-foreground transition-colors"
+      >
+        {copiedLink ? <Check className="size-3.5 text-emerald-400" /> : <Link2 className="size-3.5 text-muted-foreground" />}
+        {copiedLink ? '¡Copiado!' : 'Copiar enlace'}
+      </button>
+      <button
+        type="button"
+        onClick={copyBranchName}
+        className="flex h-7 w-full items-center gap-2 rounded-md px-2 text-[12px] text-foreground/90 hover:bg-accent hover:text-foreground transition-colors"
+      >
+        {copiedBranch ? <Check className="size-3.5 text-emerald-400" /> : <GitBranch className="size-3.5 text-muted-foreground" />}
+        {copiedBranch ? '¡Copiado!' : 'Copiar nombre de branch'}
+      </button>
+      <div className="my-1 h-px bg-white/[0.06]" />
+      <button
+        type="button"
+        onClick={handleDelete}
+        className="flex h-7 w-full items-center gap-2 rounded-md px-2 text-[12px] text-destructive hover:bg-destructive/15 transition-colors"
+      >
+        <Trash2 className="size-3.5" />
+        Eliminar issue
+      </button>
+    </PopoverDropdown>
+  )
+}
+
+function KanbanCardView({ issue, teamKey, isOverlay = false, onDeleteIssue }) {
   const overdue = isOverdue(issue.due_date, issue.status)
 
   return (
@@ -76,7 +166,7 @@ function KanbanCardView({ issue, teamKey, isOverlay = false }) {
           : 'hover:border-foreground/20 hover:bg-white/[0.03] cursor-pointer'
       )}
     >
-      {/* Top row: Status, ID & Priority */}
+      {/* Top row: Status, ID & Options */}
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-1.5">
           <StatusIcon status={issue.status} />
@@ -84,7 +174,7 @@ function KanbanCardView({ issue, teamKey, isOverlay = false }) {
             {teamKey}-{issue.number}
           </span>
         </div>
-        <PriorityIcon priority={issue.priority} />
+        <CardOptionsDropdown issue={issue} teamKey={teamKey} onDelete={onDeleteIssue} />
       </div>
 
       {/* Title */}
@@ -115,7 +205,7 @@ function KanbanCardView({ issue, teamKey, isOverlay = false }) {
   )
 }
 
-function SortableIssueCard({ issue, teamKey, onNavigate, activeItem }) {
+function SortableIssueCard({ issue, teamKey, onNavigate, activeItem, onDeleteIssue }) {
   const isDraggingIssue = activeItem?.type === 'issue' && activeItem.issue?.id === issue.id
 
   const {
@@ -176,7 +266,11 @@ function SortableIssueCard({ issue, teamKey, onNavigate, activeItem }) {
           <div className="h-0.5 flex-1 rounded-full bg-foreground shadow-sm shadow-black" />
         </div>
       )}
-      <KanbanCardView issue={issue} teamKey={teamKey} />
+      <KanbanCardView
+        issue={issue}
+        teamKey={teamKey}
+        onDeleteIssue={onDeleteIssue}
+      />
     </div>
   )
 }
@@ -189,6 +283,7 @@ function KanbanColumn({
   onAddIssue,
   isOverColumn,
   activeItem,
+  onDeleteIssue,
 }) {
   const isDraggingColumn = activeItem?.type === 'column' && activeItem.columnId === columnId
 
@@ -284,6 +379,7 @@ function KanbanColumn({
               teamKey={teamKey}
               onNavigate={onNavigate}
               activeItem={activeItem}
+              onDeleteIssue={onDeleteIssue}
             />
           ))}
         </SortableContext>
@@ -329,7 +425,7 @@ function findColumnForId(id, issuesList, columnIds) {
   return item ? item.status : null
 }
 
-export default function IssuesKanban({ issues = [], team, onStatusChange, onOpenNew }) {
+export default function IssuesKanban({ issues = [], team, onStatusChange, onOpenNew, onDeleteIssue }) {
   const navigate = useNavigate()
 
   // Columns order state (allow rearranging columns left and right)
@@ -557,6 +653,12 @@ export default function IssuesKanban({ issues = [], team, onStatusChange, onOpen
     navigate(`/team/${team?.key}/issue/${team?.key}-${issue.number}`)
   }
 
+  async function handleDeleteIssue(id) {
+    setLocalIssues((prev) => prev.filter((i) => i.id !== id))
+    onDeleteIssue?.(id)
+    await supabase.from('issues').delete().eq('id', id)
+  }
+
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
       <DndContext
@@ -579,6 +681,7 @@ export default function IssuesKanban({ issues = [], team, onStatusChange, onOpen
                 onAddIssue={onOpenNew}
                 isOverColumn={overColumnId === columnId}
                 activeItem={activeItem}
+                onDeleteIssue={handleDeleteIssue}
               />
             ))}
           </SortableContext>

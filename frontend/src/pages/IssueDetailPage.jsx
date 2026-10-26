@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -92,32 +92,7 @@ function Avatar({ person, size = 'sm' }) {
   )
 }
 
-function PopoverDropdown({ trigger, children, open, onOpenChange, align = 'left', className }) {
-  const ref = useRef(null)
-  useEffect(() => {
-    if (!open) return
-    const handleClick = (e) => !ref.current?.contains(e.target) && onOpenChange(false)
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [open, onOpenChange])
-
-  return (
-    <div ref={ref} className="relative">
-      <div onClick={() => onOpenChange(!open)}>{trigger}</div>
-      {open && (
-        <div
-          className={cn(
-            'absolute top-full z-50 mt-1 min-w-[180px] animate-fade-in rounded-lg border border-subtle bg-popover p-1 shadow-2xl shadow-black/70 backdrop-blur-md',
-            align === 'right' ? 'right-0' : 'left-0',
-            className,
-          )}
-        >
-          {children}
-        </div>
-      )}
-    </div>
-  )
-}
+import { PopoverDropdown } from '@/components/ui/popover-dropdown'
 
 export default function IssueDetailPage() {
   const { teamKey: urlTeamKey, issueIdentifier } = useParams()
