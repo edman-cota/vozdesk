@@ -102,7 +102,7 @@ function IssueRow({ issue, teamKey, onStatusChange }) {
           navigate(`/team/${teamKey}/issue/${teamKey}-${issue.number}`)
         }
       }}
-      className="group flex h-11 cursor-default items-center gap-3 border-b border-white/[0.04] pl-6 pr-5 transition-colors hover:bg-white/[0.035] focus:outline-none focus:bg-white/[0.035]"
+      className="group flex h-11 cursor-default items-center gap-3 rounded-md pl-6 pr-5 transition-colors hover:bg-white/[0.035] focus:outline-none focus:bg-white/[0.035]"
     >
       <PriorityIcon priority={issue.priority} />
       <span className="w-14 shrink-0 text-[13px] tabular-nums text-muted-foreground">{teamKey}-{issue.number}</span>
@@ -130,8 +130,8 @@ function StatusGroup({ status, issues, teamKey, onAdd, onStatusChange }) {
   const [open, setOpen] = useState(true)
   const meta = STATUS_BY_ID[status]
   return (
-    <section>
-      <div className="sticky top-0 z-10 mx-2 mt-2 flex h-9 items-center gap-2 rounded-md bg-white/[0.04] pl-2 pr-2 backdrop-blur">
+    <section className="mx-2">
+      <div className="sticky top-0 z-10 mt-2 flex h-9 items-center gap-2 rounded-md bg-white/[0.04] pl-2 pr-2 backdrop-blur">
         <button type="button" onClick={() => setOpen((o) => !o)} className="flex flex-1 items-center gap-2 text-left">
           <ChevronRight className={cn('size-3 text-muted-foreground transition-transform', open && 'rotate-90')} />
           <StatusIcon status={status} />
