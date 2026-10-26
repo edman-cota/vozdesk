@@ -89,13 +89,25 @@ function isOverdue(dueDate, status) {
 }
 
 function IssueRow({ issue, teamKey, onStatusChange }) {
+  const navigate = useNavigate()
   const overdue = isOverdue(issue.due_date, issue.status)
   return (
-    <div className="group flex h-11 items-center gap-3 border-b border-white/[0.04] pl-6 pr-5 transition-colors hover:bg-white/[0.025]">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => navigate(`/team/${teamKey}/issue/${teamKey}-${issue.number}`)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          navigate(`/team/${teamKey}/issue/${teamKey}-${issue.number}`)
+        }
+      }}
+      className="group flex h-11 cursor-pointer items-center gap-3 border-b border-white/[0.04] pl-6 pr-5 transition-colors hover:bg-white/[0.035] focus:outline-none focus:bg-white/[0.035]"
+    >
       <PriorityIcon priority={issue.priority} />
       <span className="w-14 shrink-0 text-[13px] tabular-nums text-muted-foreground">{teamKey}-{issue.number}</span>
       <StatusMenu value={issue.status} onChange={(s) => onStatusChange(issue.id, s)} />
-      <span className={cn('min-w-0 flex-1 truncate text-[13px] font-medium', issue.status === 'canceled' && 'text-muted-foreground line-through')}>
+      <span className={cn('min-w-0 flex-1 truncate text-[13px] font-medium text-foreground/90 group-hover:text-foreground', issue.status === 'canceled' && 'text-muted-foreground line-through')}>
         {issue.title}
       </span>
       {issue.source === 'voice' && (

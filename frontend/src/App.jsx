@@ -6,6 +6,7 @@ import AppLayout from '@/components/layout/AppLayout'
 import { HistoryIcon, VozDeskLogo } from '@/components/icons'
 import LoginPage from '@/pages/LoginPage'
 import IssuesPage from '@/pages/IssuesPage'
+import IssueDetailPage from '@/pages/IssueDetailPage'
 import PlaceholderPage from '@/pages/PlaceholderPage'
 
 function FullScreenLoader() {
@@ -47,6 +48,9 @@ export default function App() {
             <Route element={<AppLayout />}>
               <Route index element={<HomeRedirect />} />
               <Route path="team/:teamKey/issues/:tab?" element={<IssuesPage />} />
+              <Route path="team/:teamKey/issue/:issueIdentifier/:slug?" element={<IssueDetailPage />} />
+              <Route path="team/:teamKey/issue/:issueIdentifier" element={<IssueDetailPage />} />
+              <Route path="issue/:issueIdentifier" element={<IssueDetailPage />} />
               <Route path="team/:teamKey/home" element={<PlaceholderPage title="Home" description="Resumen del team próximamente." />} />
               <Route path="team/:teamKey/projects" element={<PlaceholderPage title="Projects" icon={Box} description="Los proyectos del team aparecerán aquí." />} />
               <Route path="team/:teamKey/views" element={<PlaceholderPage title="Views" icon={Layers} description="Guarda filtros como vistas." />} />
