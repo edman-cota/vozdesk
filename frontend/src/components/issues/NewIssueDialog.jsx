@@ -68,7 +68,7 @@ export default function NewIssueDialog({ open, onOpenChange, team, defaultStatus
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-white/10 bg-popover sm:max-w-xl">
+      <DialogContent className="border-subtle bg-popover sm:max-w-xl">
         <form onSubmit={handleSubmit} className="grid gap-4">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">

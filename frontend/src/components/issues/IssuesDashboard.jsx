@@ -117,7 +117,7 @@ export default function IssuesDashboard({ issues = [], team }) {
   return (
     <div className="space-y-6 px-4 py-3 md:px-6 md:py-4 max-w-7xl mx-auto w-full">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+      <div className="flex items-center justify-between border-b border-subtle pb-3">
         <div>
           <h2 className="text-base font-semibold text-foreground">
             {team?.name ?? 'Team'} Overview
@@ -128,7 +128,7 @@ export default function IssuesDashboard({ issues = [], team }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-md border border-white/[0.08] bg-white/[0.02] p-0.5 text-xs">
+          <div className="flex items-center rounded-md border border-subtle bg-white/[0.02] p-0.5 text-xs">
             {['7d', '30d', 'all'].map((range) => (
               <button
                 key={range}
@@ -150,7 +150,7 @@ export default function IssuesDashboard({ issues = [], team }) {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Card className="border-white/[0.06] bg-white/[0.02]">
+        <Card className="border-subtle bg-white/[0.02]">
           <CardHeader className="flex flex-row items-center justify-between p-4 pb-2">
             <CardTitle className="text-xs font-normal text-muted-foreground">Total</CardTitle>
             <Layers className="size-3.5 text-muted-foreground" />
@@ -161,7 +161,7 @@ export default function IssuesDashboard({ issues = [], team }) {
           </CardContent>
         </Card>
 
-        <Card className="border-white/[0.06] bg-white/[0.02]">
+        <Card className="border-subtle bg-white/[0.02]">
           <CardHeader className="flex flex-row items-center justify-between p-4 pb-2">
             <CardTitle className="text-xs font-normal text-muted-foreground">In Progress</CardTitle>
             <Clock className="size-3.5 text-muted-foreground" />
@@ -172,7 +172,7 @@ export default function IssuesDashboard({ issues = [], team }) {
           </CardContent>
         </Card>
 
-        <Card className="border-white/[0.06] bg-white/[0.02]">
+        <Card className="border-subtle bg-white/[0.02]">
           <CardHeader className="flex flex-row items-center justify-between p-4 pb-2">
             <CardTitle className="text-xs font-normal text-muted-foreground">Todo / Backlog</CardTitle>
             <Circle className="size-3.5 text-muted-foreground" />
@@ -183,7 +183,7 @@ export default function IssuesDashboard({ issues = [], team }) {
           </CardContent>
         </Card>
 
-        <Card className="border-white/[0.06] bg-white/[0.02]">
+        <Card className="border-subtle bg-white/[0.02]">
           <CardHeader className="flex flex-row items-center justify-between p-4 pb-2">
             <CardTitle className="text-xs font-normal text-muted-foreground">Done</CardTitle>
             <CheckCircle2 className="size-3.5 text-muted-foreground" />
@@ -198,7 +198,7 @@ export default function IssuesDashboard({ issues = [], team }) {
       {/* Main Charts */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Throughput Chart */}
-        <Card className="border-white/[0.06] bg-white/[0.02]">
+        <Card className="border-subtle bg-white/[0.02]">
           <CardHeader className="p-4 pb-2">
             <CardTitle className="text-xs font-medium text-foreground">Issue Throughput</CardTitle>
           </CardHeader>
@@ -215,7 +215,7 @@ export default function IssuesDashboard({ issues = [], team }) {
                     <stop offset="95%" stopColor="var(--chart-3)" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-subtle)" />
                 <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tick={{ fontSize: 11 }} />
                 <YAxis tickLine={false} axisLine={false} allowDecimals={false} tickMargin={8} tick={{ fontSize: 11 }} />
                 <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
@@ -243,14 +243,14 @@ export default function IssuesDashboard({ issues = [], team }) {
         </Card>
 
         {/* Status Breakdown */}
-        <Card className="border-white/[0.06] bg-white/[0.02]">
+        <Card className="border-subtle bg-white/[0.02]">
           <CardHeader className="p-4 pb-2">
             <CardTitle className="text-xs font-medium text-foreground">Issues by Status</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-2">
             <ChartContainer config={chartConfigs.status} className="h-56 w-full aspect-auto">
               <BarChart data={statusData} layout="vertical" margin={{ top: 5, right: 15, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-subtle)" />
                 <XAxis type="number" tickLine={false} axisLine={false} allowDecimals={false} tick={{ fontSize: 11 }} />
                 <YAxis
                   dataKey="name"
@@ -275,14 +275,14 @@ export default function IssuesDashboard({ issues = [], team }) {
       {/* Secondary Charts: Priority & Assignees */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Priority Breakdown */}
-        <Card className="border-white/[0.06] bg-white/[0.02]">
+        <Card className="border-subtle bg-white/[0.02]">
           <CardHeader className="p-4 pb-2">
             <CardTitle className="text-xs font-medium text-foreground">Issues by Priority</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-2">
             <ChartContainer config={chartConfigs.priority} className="h-48 w-full aspect-auto">
               <BarChart data={priorityData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-subtle)" />
                 <XAxis dataKey="priority" tickLine={false} axisLine={false} tickMargin={8} tick={{ fontSize: 11 }} />
                 <YAxis tickLine={false} axisLine={false} allowDecimals={false} tick={{ fontSize: 11 }} />
                 <ChartTooltip content={<ChartTooltipContent />} />
@@ -297,7 +297,7 @@ export default function IssuesDashboard({ issues = [], team }) {
         </Card>
 
         {/* Team Workload */}
-        <Card className="border-white/[0.06] bg-white/[0.02]">
+        <Card className="border-subtle bg-white/[0.02]">
           <CardHeader className="p-4 pb-2">
             <CardTitle className="text-xs font-medium text-foreground">Assignee Workload</CardTitle>
           </CardHeader>

@@ -31,7 +31,7 @@ function IconButton({ label, children, onClick }) {
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="grid size-7 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-white/10 hover:bg-accent hover:text-foreground"
+      className="grid size-7 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-subtle hover:bg-accent hover:text-foreground"
     >
       {children}
     </button>
@@ -54,7 +54,7 @@ function StatusMenu({ value, onChange }) {
         <StatusIcon status={value} />
       </button>
       {open && (
-        <div className="absolute left-0 top-6 z-50 w-44 animate-fade-in rounded-lg border border-white/10 bg-popover p-1 shadow-2xl shadow-black/80">
+        <div className="absolute left-0 top-6 z-50 w-44 animate-fade-in rounded-lg border border-subtle bg-popover p-1 shadow-2xl shadow-black/80">
           {STATUSES.map((s) => (
             <button
               key={s.id}
@@ -118,7 +118,7 @@ function IssueRow({ issue, teamKey, onStatusChange }) {
         </span>
       )}
       {issue.due_date && (
-        <span className={cn('rounded-full border px-1.5 py-0.5 text-[11px]', overdue ? 'border-red-500/30 text-red-400' : 'border-white/10 text-muted-foreground')}>
+        <span className={cn('rounded-full border px-1.5 py-0.5 text-[11px]', overdue ? 'border-red-500/30 text-red-400' : 'border-subtle text-muted-foreground')}>
           {fmtDate(issue.due_date)}
         </span>
       )}
@@ -224,9 +224,8 @@ export default function IssuesPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Header */}
-      <header className="flex h-11 shrink-0 items-center justify-between border-b border-white/[0.06] px-4">
+      <header className="flex h-11 shrink-0 items-center justify-between border-b border-subtle px-4">
         <div className="flex items-center gap-1.5 text-[13px]">
-          <span className="grid size-4 place-items-center rounded bg-primary/20 text-[9px] font-bold text-primary">{team.key.slice(0, 2)}</span>
           <span className="text-muted-foreground">{team.name}</span>
           <ChevronRight className="size-3 text-muted-foreground" />
           <span className="font-medium">Issues</span>
@@ -259,8 +258,8 @@ export default function IssuesPage() {
                 cn(
                   'flex h-7 items-center rounded-full border px-3 text-[13px] transition-colors',
                   tab === t.id
-                    ? 'border-white/10 bg-white/[0.08] text-foreground'
-                    : 'border-white/[0.06] text-muted-foreground hover:bg-white/[0.04] hover:text-foreground',
+                    ? 'border-subtle bg-white/[0.06] text-foreground'
+                    : 'border-subtle text-muted-foreground hover:bg-white/[0.03] hover:text-foreground',
                 )
               }
             >
@@ -290,7 +289,7 @@ export default function IssuesPage() {
         ) : groups.length === 0 ? (
           <div className="grid h-full place-items-center">
             <div className="max-w-sm text-center animate-fade-in">
-              <div className="mx-auto mb-4 grid size-12 place-items-center rounded-xl border border-white/10 bg-white/[0.03]">
+              <div className="mx-auto mb-4 grid size-12 place-items-center rounded-xl border border-subtle bg-white/[0.03]">
                 <Mic className="size-5 text-fuchsia-300" />
               </div>
               <p className="font-medium">No hay issues aquí</p>

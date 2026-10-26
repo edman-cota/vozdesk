@@ -106,7 +106,7 @@ function PopoverDropdown({ trigger, children, open, onOpenChange, align = 'left'
       {open && (
         <div
           className={cn(
-            'absolute top-full z-50 mt-1 min-w-[180px] animate-fade-in rounded-lg border border-white/10 bg-popover p-1 shadow-2xl shadow-black/70 backdrop-blur-md',
+            'absolute top-full z-50 mt-1 min-w-[180px] animate-fade-in rounded-lg border border-subtle bg-popover p-1 shadow-2xl shadow-black/70 backdrop-blur-md',
             align === 'right' ? 'right-0' : 'left-0',
             className,
           )}
@@ -450,7 +450,7 @@ export default function IssueDetailPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Top Breadcrumb & Actions Bar */}
-      <header className="flex h-11 shrink-0 items-center justify-between border-b border-white/[0.06] px-4">
+      <header className="flex h-11 shrink-0 items-center justify-between border-b border-subtle px-4">
         {/* Left: Breadcrumbs */}
         <div className="flex min-w-0 items-center gap-1.5 text-[13px]">
           <span className="grid size-4 place-items-center rounded bg-primary/20 text-[9px] font-bold text-primary">
@@ -540,7 +540,7 @@ export default function IssueDetailPage() {
             aria-label="Copiar link"
             title={copiedLink ? '¡Copiado!' : 'Copiar enlace'}
             onClick={copyIssueUrl}
-            className="grid size-7 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-white/10 hover:bg-accent hover:text-foreground"
+            className="grid size-7 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-subtle hover:bg-accent hover:text-foreground"
           >
             {copiedLink ? <Check className="size-3.5 text-emerald-400" /> : <Link2 className="size-3.5" />}
           </button>
@@ -549,14 +549,14 @@ export default function IssueDetailPage() {
             aria-label="Copiar branch"
             title="Copiar branch git"
             onClick={copyBranchName}
-            className="grid size-7 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-white/10 hover:bg-accent hover:text-foreground"
+            className="grid size-7 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-subtle hover:bg-accent hover:text-foreground"
           >
             <GitBranch className="size-3.5" />
           </button>
           <button
             type="button"
             aria-label="Opciones de vista"
-            className="grid size-7 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-white/10 hover:bg-accent hover:text-foreground"
+            className="grid size-7 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-subtle hover:bg-accent hover:text-foreground"
           >
             <SlidersHorizontal className="size-3.5" />
           </button>
@@ -606,7 +606,7 @@ export default function IssueDetailPage() {
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Add description..."
                     rows={4}
-                    className="w-full resize-none rounded-md border border-white/10 bg-white/[0.02] p-3 text-sm text-foreground outline-none focus:border-white/25 placeholder:text-muted-foreground/50"
+                    className="w-full resize-none rounded-md border border-subtle bg-white/[0.02] p-3 text-sm text-foreground outline-none focus:border-subtle placeholder:text-muted-foreground/50"
                   />
                   <div className="flex items-center gap-2">
                     <button
@@ -677,7 +677,7 @@ export default function IssueDetailPage() {
                           'grid size-4 place-items-center rounded border transition-colors',
                           sub.completed
                             ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400'
-                            : 'border-white/20 hover:border-white/40',
+                            : 'border-subtle hover:border-foreground/30',
                         )}
                       >
                         {sub.completed && <Check className="size-3" />}
@@ -710,7 +710,7 @@ export default function IssueDetailPage() {
                     value={newSubIssueTitle}
                     onChange={(e) => setNewSubIssueTitle(e.target.value)}
                     placeholder="Título del sub-issue..."
-                    className="flex-1 rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1 text-xs outline-none focus:border-white/25"
+                    className="flex-1 rounded-md border border-subtle bg-white/[0.03] px-2.5 py-1 text-xs outline-none focus:border-subtle"
                   />
                   <button
                     type="submit"
@@ -739,7 +739,7 @@ export default function IssueDetailPage() {
             </div>
 
             {/* Activity Section */}
-            <div className="border-t border-white/[0.06] pt-6 space-y-4">
+            <div className="border-t border-subtle pt-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-[14px] font-semibold text-foreground">Activity</h2>
                 <div className="flex items-center gap-2">
@@ -794,7 +794,7 @@ export default function IssueDetailPage() {
               </div>
 
               {/* Leave a comment container */}
-              <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.02] p-3 transition-colors focus-within:border-white/20">
+              <div className="mt-4 rounded-xl border border-subtle bg-white/[0.02] p-3 transition-colors focus-within:border-subtle">
                 <textarea
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
@@ -807,7 +807,7 @@ export default function IssueDetailPage() {
                   rows={2}
                   className="w-full resize-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/60"
                 />
-                <div className="mt-2 flex items-center justify-between border-t border-white/[0.04] pt-2">
+                <div className="mt-2 flex items-center justify-between border-t border-subtle pt-2">
                   <button
                     type="button"
                     aria-label="Adjuntar archivo"
@@ -836,7 +836,7 @@ export default function IssueDetailPage() {
         </div>
 
         {/* Right Sidebar: Properties */}
-        <aside className="w-full lg:w-72 lg:shrink-0 border-t lg:border-t-0 lg:border-l border-white/[0.06] p-5 space-y-6 overflow-y-auto">
+        <aside className="w-full lg:w-72 lg:shrink-0 border-t lg:border-t-0 lg:border-l border-subtle p-5 space-y-6 overflow-y-auto">
           {/* Properties Header */}
           <div className="text-[13px] font-medium text-muted-foreground">Properties</div>
 
@@ -996,7 +996,7 @@ export default function IssueDetailPage() {
                 trigger={
                   <button
                     type="button"
-                    className="flex h-6 items-center gap-1 rounded-md border border-dashed border-white/10 px-2 text-xs text-muted-foreground hover:border-white/20 hover:text-foreground"
+                    className="flex h-6 items-center gap-1 rounded-md border border-dashed border-subtle px-2 text-xs text-muted-foreground hover:border-subtle hover:text-foreground"
                   >
                     <Tag className="size-3" />
                     Add label
@@ -1081,7 +1081,7 @@ export default function IssueDetailPage() {
                 type="date"
                 value={issue.due_date || ''}
                 onChange={(e) => updateIssueField('due_date', e.target.value || null)}
-                className="h-7 rounded border border-white/10 bg-white/[0.03] px-2 text-xs text-foreground outline-none focus:border-white/20"
+                className="h-7 rounded border border-subtle bg-white/[0.03] px-2 text-xs text-foreground outline-none focus:border-subtle"
               />
               {issue.due_date && (
                 <button

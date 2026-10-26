@@ -65,8 +65,8 @@ export default function LoginPage() {
           <p className="mt-1.5 text-[13px] text-muted-foreground">Gestiona tus tareas hablando.</p>
         </div>
 
-        <div className="rounded-2xl border border-white/[0.08] bg-card/70 p-6 shadow-2xl shadow-black/50 backdrop-blur-xl">
-          <Button id="google-login" type="button" variant="outline" onClick={handleGoogle} className="h-10 w-full gap-2 border-white/10 bg-white/[0.03] hover:bg-white/[0.07]">
+        <div className="rounded-2xl border border-subtle bg-card/70 p-6 shadow-2xl shadow-black/50 backdrop-blur-xl">
+          <Button id="google-login" type="button" variant="outline" onClick={handleGoogle} className="h-10 w-full gap-2 border-subtle bg-white/[0.03] hover:bg-white/[0.07]">
             <GoogleIcon /> Continuar con Google
           </Button>
 

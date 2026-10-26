@@ -37,7 +37,7 @@ export default function AppLayout() {
       <div className="flex min-h-0 flex-1">
         <Sidebar />
         {/* Panel principal flotante */}
-        <main className="mt-2 mr-2 flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-white/[0.07] bg-card shadow-[0_0_0_1px_rgba(0,0,0,0.4),0_8px_30px_rgba(0,0,0,0.35)]">
+        <main className="mt-2 mr-2 flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-subtle bg-card shadow-[0_0_0_1px_rgba(0,0,0,0.4),0_8px_30px_rgba(0,0,0,0.35)]">
           <Outlet />
         </main>
       </div>
