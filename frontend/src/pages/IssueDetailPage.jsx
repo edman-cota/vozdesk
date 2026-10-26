@@ -462,9 +462,6 @@ export default function IssueDetailPage() {
             <ArrowLeft className="size-4" />
           </Link>
           <span className="hidden sm:inline-flex items-center gap-1.5 shrink-0">
-            <span className="grid size-4 place-items-center rounded bg-primary/20 text-[9px] font-bold text-primary">
-              {teamKey.slice(0, 2)}
-            </span>
             <span className="font-medium text-foreground">{activeTeam?.name || 'VozDesk'}</span>
             <ChevronRight className="size-3 text-muted-foreground" />
             <Link
