@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import logoUrl from '@/assets/logo.svg'
 
 // Iconos que lucide-react v1 ya no incluye (marcas / history)
 
@@ -23,19 +24,13 @@ export function HistoryIcon({ className, ...props }) {
   )
 }
 
-export function VozDeskLogo({ className }) {
+export function VozDeskLogo({ className, ...props }) {
   return (
-    <svg viewBox="0 0 32 32" className={cn('size-8', className)}>
-      <defs>
-        <linearGradient id="vd-g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#d946ef" />
-          <stop offset="1" stopColor="#6366f1" />
-        </linearGradient>
-      </defs>
-      <rect width="32" height="32" rx="9" fill="url(#vd-g)" />
-      {[9, 13, 17, 21].map((x, i) => (
-        <rect key={x} x={x} y={[12, 8, 10, 13][i]} width="2.4" height={[8, 16, 12, 6][i]} rx="1.2" fill="#fff" />
-      ))}
-    </svg>
+    <img
+      src={logoUrl}
+      alt="VozDesk Logo"
+      className={cn('size-8 shrink-0 select-none', className)}
+      {...props}
+    />
   )
 }
