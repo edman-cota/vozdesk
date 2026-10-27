@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
-  Box, Check, ChevronDown, Ellipsis, House, Import, Inbox,
+  Box, Check, ChevronDown, Download, Ellipsis, House, Import, Inbox,
   Layers, LogOut, Plus, Search, SquarePen, CircleDot, Copy, X, Send,
 } from 'lucide-react'
 import { GithubIcon } from '@/components/icons'
@@ -158,21 +158,103 @@ function WorkspaceSwitcher() {
 
 function WhatsNewCard() {
   const [visible, setVisible] = useState(() => localStorage.getItem('vozdesk:whatsnew') !== 'hidden')
+  const [installPrompt, setInstallPrompt] = useState(null)
+  const [isInstalled, setIsInstalled] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+  })
+  const [helperText, setHelperText] = useState('')
+
+  useEffect(() => {
+    const handleBeforeInstall = (e) => {
+      e.preventDefault()
+      setInstallPrompt(e)
+    }
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true)
+      setInstallPrompt(null)
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall)
+    window.addEventListener('appinstalled', handleAppInstalled)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
+      window.removeEventListener('appinstalled', handleAppInstalled)
+    }
+  }, [])
+
+  const handleInstallClick = async () => {
+    if (installPrompt) {
+      installPrompt.prompt()
+      const choice = await installPrompt.userChoice
+      if (choice.outcome === 'accepted') {
+        setIsInstalled(true)
+        setInstallPrompt(null)
+      }
+    } else {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      if (isIOS) {
+        setHelperText('En Safari: pulsa Compartir y selecciona "Añadir a pantalla de inicio"')
+      } else {
+        setHelperText('Usa el icono de instalación ⊕ o menú del navegador para instalar VozDesk')
+      }
+      setTimeout(() => setHelperText(''), 6000)
+    }
+  }
+
   if (!visible) return null
+
   return (
     <div className="group relative mx-1 mb-1 rounded-lg border border-sidebar-border bg-sidebar-accent/40 p-3 transition-colors hover:bg-sidebar-accent/60">
       <button
         type="button"
         aria-label="Cerrar"
-        onClick={() => { localStorage.setItem('vozdesk:whatsnew', 'hidden'); setVisible(false) }}
+        onClick={() => {
+          localStorage.setItem('vozdesk:whatsnew', 'hidden')
+          setVisible(false)
+        }}
         className="absolute right-2 top-2 rounded p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
       >
         <X className="size-3" />
       </button>
-      <p className="text-xs text-muted-foreground">What&apos;s new</p>
-      <p className="mt-0.5 text-[13px] font-medium leading-snug text-sidebar-accent-foreground">
-        Crea issues con tu voz desde el Agent
+
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs font-medium text-primary">What&apos;s new</span>
+        <span className="rounded bg-primary/15 px-1 py-0.5 text-[10px] font-semibold text-primary">
+          PWA
+        </span>
+      </div>
+
+      <p className="mt-1 text-[13px] font-medium leading-snug text-sidebar-accent-foreground">
+        Instala VozDesk en tu dispositivo
       </p>
+      <p className="mt-0.5 text-[11px] text-muted-foreground leading-normal">
+        Accede como app nativa en tu escritorio o móvil, rápida y sin pestañas.
+      </p>
+
+      {isInstalled ? (
+        <div className="mt-2.5 flex items-center gap-1.5 text-xs font-medium text-emerald-400">
+          <Check className="size-3.5" />
+          <span>VozDesk ya está instalada</span>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={handleInstallClick}
+          className="mt-2.5 flex h-7 w-full items-center justify-center gap-1.5 rounded-md bg-primary px-2 text-xs font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 cursor-pointer"
+        >
+          <Download className="size-3.5" />
+          <span>Instalar aplicación</span>
+        </button>
+      )}
+
+      {helperText && (
+        <p className="mt-2 rounded bg-background/90 p-1.5 text-[11px] leading-tight text-foreground/90 border border-border">
+          {helperText}
+        </p>
+      )}
     </div>
   )
 }
