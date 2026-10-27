@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   DndContext,
   DragOverlay,
@@ -427,6 +427,7 @@ function findColumnForId(id, issuesList, columnIds) {
 
 export default function IssuesKanban({ issues = [], team, onStatusChange, onOpenNew, onDeleteIssue }) {
   const navigate = useNavigate()
+  const location = useLocation()
 
   // Columns order state (allow rearranging columns left and right)
   const [columns, setColumns] = useState(() =>
@@ -650,7 +651,9 @@ export default function IssuesKanban({ issues = [], team, onStatusChange, onOpen
   }
 
   const handleCardClick = (issue) => {
-    navigate(`/team/${team?.key}/issue/${team?.key}-${issue.number}`)
+    navigate(`/team/${team?.key}/issue/${team?.key}-${issue.number}`, {
+      state: { from: location.pathname },
+    })
   }
 
   async function handleDeleteIssue(id) {

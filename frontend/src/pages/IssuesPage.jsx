@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { NavLink, useNavigate, useParams } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Bell, ChevronRight, GripVertical, Layers, ListFilter, Mic, PanelRight, Plus, SlidersHorizontal, Star, UserRound,
 } from 'lucide-react'
@@ -112,16 +112,17 @@ function isOverdue(dueDate, status) {
 
 function IssueRow({ issue, teamKey, onStatusChange, dragHandleProps }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const overdue = isOverdue(issue.due_date, issue.status)
   return (
     <div
       role="button"
       tabIndex={0}
-      onClick={() => navigate(`/team/${teamKey}/issue/${teamKey}-${issue.number}`)}
+      onClick={() => navigate(`/team/${teamKey}/issue/${teamKey}-${issue.number}`, { state: { from: location.pathname } })}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
-          navigate(`/team/${teamKey}/issue/${teamKey}-${issue.number}`)
+          navigate(`/team/${teamKey}/issue/${teamKey}-${issue.number}`, { state: { from: location.pathname } })
         }
       }}
       className="group flex h-11 cursor-default items-center gap-1.5 sm:gap-2 rounded-md px-2 sm:pr-5 transition-colors hover:bg-white/[0.035] focus:outline-none focus:bg-white/[0.035]"
@@ -257,6 +258,12 @@ export default function IssuesPage() {
   const [issues, setIssues] = useState([])
   const [loading, setLoading] = useState(true)
   const [dialog, setDialog] = useState({ open: false, status: 'backlog' })
+
+  useEffect(() => {
+    if (teamKey && tab) {
+      sessionStorage.setItem(`lastIssuesPath_${teamKey}`, `/team/${teamKey}/issues/${tab}`)
+    }
+  }, [teamKey, tab])
 
   const load = useCallback(async () => {
     if (!team) return

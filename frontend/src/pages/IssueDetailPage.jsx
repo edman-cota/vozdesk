@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
   ArrowUp,
@@ -97,6 +97,7 @@ import { PopoverDropdown } from '@/components/ui/popover-dropdown'
 export default function IssueDetailPage() {
   const { teamKey: urlTeamKey, issueIdentifier } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { teams } = useWorkspace()
   const { user } = useAuth()
 
@@ -399,6 +400,19 @@ export default function IssueDetailPage() {
   const teamKey = activeTeam?.key || 'WUD'
   const issueKey = `${teamKey}-${issue?.number ?? ''}`
 
+  const fallbackIssuesPath =
+    sessionStorage.getItem(`lastIssuesPath_${teamKey}`) ||
+    `/team/${teamKey}/issues/active`
+  const backPath = location.state?.from || fallbackIssuesPath
+
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1)
+    } else {
+      navigate(backPath)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex flex-1 flex-col p-6 animate-pulse space-y-4">
@@ -413,12 +427,13 @@ export default function IssueDetailPage() {
     return (
       <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
         <p className="text-lg font-medium text-destructive">{error || 'Issue no encontrado'}</p>
-        <Link
-          to={`/team/${teamKey}/issues/active`}
+        <button
+          type="button"
+          onClick={handleBack}
           className="mt-4 inline-flex h-8 items-center rounded-md bg-white/10 px-3 text-xs font-medium hover:bg-white/15"
         >
           Volver a Issues
-        </Link>
+        </button>
       </div>
     )
   }
@@ -429,18 +444,19 @@ export default function IssueDetailPage() {
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-subtle px-2 sm:px-4">
         {/* Left: Breadcrumbs & Back */}
         <div className="flex min-w-0 items-center gap-1 sm:gap-1.5 text-[13px]">
-          <Link
-            to={`/team/${teamKey}/issues/active`}
-            className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground shrink-0"
+          <button
+            type="button"
+            onClick={handleBack}
+            className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground shrink-0 cursor-pointer"
             aria-label="Volver a issues"
           >
             <ArrowLeft className="size-4" />
-          </Link>
+          </button>
           <span className="hidden sm:inline-flex items-center gap-1.5 shrink-0">
             <span className="font-medium text-foreground">{activeTeam?.name || 'VozDesk'}</span>
             <ChevronRight className="size-3 text-muted-foreground" />
             <Link
-              to={`/team/${teamKey}/issues/active`}
+              to={backPath}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Issues
